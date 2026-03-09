@@ -29,3 +29,9 @@ verify_jwt = false
 
 [functions.send-followup]
 verify_jwt = false
+
+[functions.bulk-dialer]
+verify_jwt = false
+
+[functions.telegram-bot]
+verify_jwt = false

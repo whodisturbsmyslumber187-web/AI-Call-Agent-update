@@ -8,6 +8,7 @@ import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, 
 import LeaderboardWidget from "@/components/command-center/LeaderboardWidget";
 import RevenueWidget from "@/components/command-center/RevenueWidget";
 import SlaAlertsBanner from "@/components/command-center/SlaAlertsBanner";
+import PredictiveAnalyticsWidget from "@/components/command-center/PredictiveAnalyticsWidget";
 
 const CommandCenter = () => {
   const [now, setNow] = useState(new Date());
@@ -201,10 +202,11 @@ const CommandCenter = () => {
         </Card>
       </div>
 
-      {/* Leaderboard + Revenue */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      {/* Leaderboard + Revenue + Predictive */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <LeaderboardWidget />
         <RevenueWidget />
+        <PredictiveAnalyticsWidget />
       </div>
 
       {/* Activity Feed */}

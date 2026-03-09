@@ -6,27 +6,25 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Save, Shield, Key, Plus, Trash2, Loader2, Check, X, Pencil, Radio, Volume2, Server, Wifi, WifiOff } from "lucide-react";
+import { Save, Shield, Loader2 } from "lucide-react";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
-} from "@/components/ui/dialog";
 import LiveKitConfigSection from "@/components/settings/LiveKitConfigSection";
 import TTSServerConfigSection from "@/components/settings/TTSServerConfigSection";
 import AgentNateConfigSection from "@/components/settings/AgentNateConfigSection";
 import ScheduledReportsSection from "@/components/settings/ScheduledReportsSection";
 import ApiCredentialsSection from "@/components/settings/ApiCredentialsSection";
+import TelegramConfigSection from "@/components/settings/TelegramConfigSection";
+import ApiKeysSection from "@/components/settings/ApiKeysSection";
 
 const Settings = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const { data: platformSettings, isLoading: settingsLoading } = useQuery({
+  const { data: platformSettings } = useQuery({
     queryKey: ["platform-settings"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -47,13 +45,6 @@ const Settings = () => {
     default_voice: "alloy",
   });
 
-  const effectiveDefaults = {
-    llm_provider: platformSettings?.llm_provider || defaults.llm_provider,
-    llm_model: platformSettings?.llm_model || defaults.llm_model,
-    tts_provider: platformSettings?.tts_provider || defaults.tts_provider,
-    default_voice: platformSettings?.default_voice || defaults.default_voice,
-  };
-
   const saveDefaults = useMutation({
     mutationFn: async () => {
       const entries = Object.entries(defaults);
@@ -67,28 +58,23 @@ const Settings = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["platform-settings"] });
-      toast({ title: "Defaults Saved", description: "New businesses will use these defaults." });
+      toast({ title: "Defaults Saved" });
     },
-    onError: () => toast({ title: "Error", description: "Failed to save", variant: "destructive" }),
+    onError: () => toast({ title: "Error", variant: "destructive" }),
   });
 
   return (
     <div className="p-6 space-y-6 max-w-4xl">
       <div>
         <h1 className="text-3xl font-bold text-foreground">Platform Settings</h1>
-        <p className="text-muted-foreground mt-2">
-          Global configuration — each business can override these in its own Providers tab
-        </p>
+        <p className="text-muted-foreground mt-2">Global configuration — each business can override these</p>
       </div>
 
       {/* Default Provider Preferences */}
       <Card className="bg-card border-border">
         <CardHeader>
-          <CardTitle className="text-foreground flex items-center gap-2">
-            <Shield className="h-5 w-5 text-primary" />
-            Default Provider Preferences
-          </CardTitle>
-          <CardDescription>New businesses inherit these. Each can override in its Providers tab.</CardDescription>
+          <CardTitle className="text-foreground flex items-center gap-2"><Shield className="h-5 w-5 text-primary" />Default Provider Preferences</CardTitle>
+          <CardDescription>New businesses inherit these.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
@@ -136,25 +122,17 @@ const Settings = () => {
             </div>
           </div>
           <Button onClick={() => saveDefaults.mutate()} disabled={saveDefaults.isPending} className="w-full">
-            {saveDefaults.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-            Save Defaults
+            {saveDefaults.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}Save Defaults
           </Button>
         </CardContent>
       </Card>
 
-      {/* LiveKit Configuration */}
       <LiveKitConfigSection />
-
-      {/* TTS Server Configuration */}
       <TTSServerConfigSection />
-
-      {/* AgentNate Connection */}
       <AgentNateConfigSection />
-
-      {/* API Credentials CRUD */}
+      <TelegramConfigSection />
+      <ApiKeysSection />
       <ApiCredentialsSection />
-
-      {/* Scheduled Reports */}
       <ScheduledReportsSection />
     </div>
   );
