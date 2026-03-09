@@ -90,6 +90,7 @@ const BusinessDetail = () => {
           <TabsTrigger value="failover">Failover</TabsTrigger>
           <TabsTrigger value="phones">Phones</TabsTrigger>
           <TabsTrigger value="routing">Routing</TabsTrigger>
+          <TabsTrigger value="ivr">IVR Menu</TabsTrigger>
           <TabsTrigger value="calendar">Calendar</TabsTrigger>
           <TabsTrigger value="gcal">Google Cal</TabsTrigger>
           <TabsTrigger value="knowledge">Knowledge</TabsTrigger>
