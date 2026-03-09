@@ -31,6 +31,7 @@ import DncListTab from "@/components/business/DncListTab";
 import CallDispositionsTab from "@/components/business/CallDispositionsTab";
 import ContactSegmentsTab from "@/components/business/ContactSegmentsTab";
 import ProviderFailoverTab from "@/components/business/ProviderFailoverTab";
+import MarketingCampaignsTab from "@/components/business/MarketingCampaignsTab";
 
 const BusinessDetail = () => {
   const { id } = useParams<{ id: string }>();
