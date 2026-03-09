@@ -9,12 +9,32 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
+    // ── Auth check ──
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const anonClient = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: authHeader } } });
+    const { data: claimsData, error: claimsErr } = await anonClient.auth.getClaims(authHeader.replace("Bearer ", ""));
+    if (claimsErr || !claimsData?.claims) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const userId = claimsData.claims.sub as string;
+
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
     const { action, job_id } = await req.json();
+
+    // Verify job ownership
+    if (job_id) {
+      const { data: job } = await supabase.from("bulk_marketing_jobs").select("business_id, businesses!inner(user_id)").eq("id", job_id).single();
+      if (!job || (job as any).businesses?.user_id !== userId) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+    }
 
     if (action === "start") {
       await supabase.from("bulk_marketing_jobs").update({ status: "running", started_at: new Date().toISOString() }).eq("id", job_id);
@@ -38,23 +58,18 @@ Deno.serve(async (req) => {
       await supabase.from("bulk_marketing_entries").update({ status: "processing", attempt_count: 1 }).in("id", entryIds);
       await supabase.from("bulk_marketing_jobs").update({ in_progress: entryIds.length }).eq("id", job_id);
 
-      // Simulate processing based on job_type
       for (const entry of entries) {
         let status = "delivered";
         let deliveryResult = "sent";
 
         switch (job.job_type) {
           case "rvm": {
-            // Ringless Voicemail - simulate delivery to voicemail
             const rvmSuccess = Math.random() > 0.15;
             status = rvmSuccess ? "delivered" : "failed";
-            deliveryResult = rvmSuccess
-              ? "voicemail_delivered"
-              : (Math.random() > 0.5 ? "voicemail_full" : "carrier_blocked");
+            deliveryResult = rvmSuccess ? "voicemail_delivered" : (Math.random() > 0.5 ? "voicemail_full" : "carrier_blocked");
             break;
           }
           case "one_ring": {
-            // One-Ring callback - simulate single ring then hangup
             const ringSuccess = Math.random() > 0.1;
             const gotCallback = ringSuccess && Math.random() > 0.7;
             status = ringSuccess ? (gotCallback ? "callback_received" : "delivered") : "failed";
@@ -62,14 +77,12 @@ Deno.serve(async (req) => {
             break;
           }
           case "bulk_sms": {
-            // Bulk SMS - simulate message delivery
             const smsSuccess = Math.random() > 0.08;
             status = smsSuccess ? "delivered" : "failed";
             deliveryResult = smsSuccess ? "sent" : (Math.random() > 0.5 ? "invalid_number" : "carrier_blocked");
             break;
           }
           case "press_1": {
-            // Press-1 IVR blast - simulate call + DTMF detection
             const answered = Math.random() > 0.4;
             const pressed1 = answered && Math.random() > 0.6;
             status = answered ? "delivered" : "failed";
@@ -77,7 +90,6 @@ Deno.serve(async (req) => {
             break;
           }
           case "speed_to_lead": {
-            // Speed-to-Lead - simulate instant outbound to new lead
             const connected = Math.random() > 0.3;
             status = connected ? "delivered" : "failed";
             deliveryResult = connected ? "lead_connected" : "no_answer";
@@ -93,7 +105,6 @@ Deno.serve(async (req) => {
         }).eq("id", entry.id);
       }
 
-      // Update job counters
       const { count: completedCount } = await supabase.from("bulk_marketing_entries").select("*", { count: "exact", head: true }).eq("job_id", job_id).eq("status", "delivered");
       const { count: callbackCount } = await supabase.from("bulk_marketing_entries").select("*", { count: "exact", head: true }).eq("job_id", job_id).eq("status", "callback_received");
       const { count: failedCount } = await supabase.from("bulk_marketing_entries").select("*", { count: "exact", head: true }).eq("job_id", job_id).eq("status", "failed");
@@ -133,6 +144,6 @@ Deno.serve(async (req) => {
 
     return new Response(JSON.stringify({ error: "Unknown action" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ error: "Internal error" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });

@@ -10,11 +10,29 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
+    // ── Auth check ──
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const anonClient = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: authHeader } } });
+    const { data: claimsData, error: claimsErr } = await anonClient.auth.getClaims(authHeader.replace("Bearer ", ""));
+    if (claimsErr || !claimsData?.claims) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const userId = claimsData.claims.sub as string;
+
     const { business_id, trigger_event, recipient_phone, recipient_email, variables } = await req.json();
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Verify business ownership
+    const { data: biz } = await supabase.from("businesses").select("id,user_id").eq("id", business_id).single();
+    if (!biz || biz.user_id !== userId) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
 
     // Get matching active templates
     const { data: templates } = await supabase
@@ -32,7 +50,6 @@ serve(async (req) => {
 
     const results = [];
     for (const template of templates) {
-      // Replace variables in template
       let text = template.template_text;
       if (variables) {
         for (const [key, value] of Object.entries(variables)) {
@@ -40,7 +57,6 @@ serve(async (req) => {
         }
       }
 
-      // Log the follow-up attempt (actual SMS/WhatsApp sending would require Twilio/etc integration)
       console.log(`[${template.channel}] To: ${recipient_phone || recipient_email} | Message: ${text}`);
       
       results.push({
@@ -56,7 +72,7 @@ serve(async (req) => {
     });
   } catch (e) {
     console.error("Error:", e);
-    return new Response(JSON.stringify({ error: e.message }), {
+    return new Response(JSON.stringify({ error: "Internal error" }), {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }

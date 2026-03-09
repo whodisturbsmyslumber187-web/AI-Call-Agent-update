@@ -61,6 +61,18 @@ serve(async (req) => {
   }
 
   try {
+    // ── Auth check ──
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const anonClient = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: authHeader } } });
+    const { data: claimsData, error: claimsErr } = await anonClient.auth.getClaims(authHeader.replace("Bearer ", ""));
+    if (claimsErr || !claimsData?.claims) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const userId = claimsData.claims.sub as string;
+
     const LIVEKIT_API_KEY = Deno.env.get("LIVEKIT_API_KEY");
     const LIVEKIT_API_SECRET = Deno.env.get("LIVEKIT_API_SECRET");
     const LIVEKIT_URL = Deno.env.get("LIVEKIT_URL");
@@ -80,14 +92,14 @@ serve(async (req) => {
       );
     }
 
-    // Verify business exists and has LiveKit enabled
+    // Verify business exists, has LiveKit enabled, AND belongs to the user
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL") as string;
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") as string;
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     const { data: business, error: bizErr } = await supabase
       .from("businesses")
-      .select("id, name, livekit_enabled, livekit_room_prefix")
+      .select("id, name, livekit_enabled, livekit_room_prefix, user_id")
       .eq("id", businessId)
       .single();
 
@@ -95,6 +107,13 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ error: "Business not found" }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (business.user_id !== userId) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -118,7 +137,7 @@ serve(async (req) => {
   } catch (e) {
     console.error("LiveKit token error:", e);
     return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }),
+      JSON.stringify({ error: "Internal error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

@@ -96,6 +96,43 @@ const API_DOCS = {
   },
 };
 
+// ── Field allowlists ──────────────────────────────────────────────
+const ALLOWED_BUSINESS_FIELDS = new Set([
+  "name", "industry", "instructions", "greeting_message", "voice",
+  "knowledge_base", "sales_script", "objection_handling", "closing_techniques",
+  "upsell_prompts", "agent_mode", "status", "timezone", "default_language",
+  "supported_languages", "greeting_audio_url", "hold_music_url",
+  "personality_friendliness", "personality_formality", "personality_urgency",
+  "personality_humor", "endpointing_threshold_ms", "barge_in_enabled",
+  "voicemail_detection_enabled", "ivr_enabled", "default_ivr_menu_id",
+  "livekit_enabled", "livekit_room_prefix",
+]);
+
+const ALLOWED_PROVIDER_FIELDS = new Set([
+  "llm_provider", "llm_model", "llm_api_endpoint", "llm_api_key_name",
+  "tts_provider", "tts_voice_id", "tts_api_endpoint", "tts_api_key_name",
+  "stt_provider", "stt_model",
+]);
+
+const ALLOWED_IVR_FIELDS = new Set([
+  "name", "template_type", "greeting_text", "greeting_audio_url",
+  "fallback_action", "fallback_target", "max_retries", "timeout_seconds", "is_active",
+]);
+
+function filterFields(updates: Record<string, unknown>, allowed: Set<string>): Record<string, unknown> {
+  return Object.fromEntries(Object.entries(updates).filter(([k]) => allowed.has(k)));
+}
+
+async function verifyBusinessOwnership(supabase: any, businessId: string, userId: string): Promise<boolean> {
+  const { data } = await supabase.from("businesses").select("id").eq("id", businessId).eq("user_id", userId).maybeSingle();
+  return !!data;
+}
+
+async function verifyJobOwnership(supabase: any, jobId: string, table: string, userId: string): Promise<boolean> {
+  const { data } = await supabase.from(table).select("business_id, businesses!inner(user_id)").eq("id", jobId).single();
+  return data && (data as any).businesses?.user_id === userId;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS")
     return new Response(null, { headers: corsHeaders });
@@ -185,9 +222,11 @@ Deno.serve(async (req) => {
         if (!bid) return err("business_id required");
         const updates = body.updates as Record<string, unknown>;
         if (!updates) return err("updates object required");
+        const safeUpdates = filterFields(updates, ALLOWED_BUSINESS_FIELDS);
+        if (Object.keys(safeUpdates).length === 0) return err("No allowed fields in updates");
         const { data, error } = await supabase
           .from("businesses")
-          .update(updates)
+          .update(safeUpdates)
           .eq("id", bid)
           .eq("user_id", apiKey.user_id)
           .select()
@@ -267,16 +306,22 @@ Deno.serve(async (req) => {
       case "update_ivr_menu": {
         const menuId = body.menu_id as string;
         if (!menuId) return err("menu_id required");
+        // Verify ownership via ivr_menus -> businesses
+        const { data: menuCheck } = await supabase.from("ivr_menus").select("business_id, businesses!inner(user_id)").eq("id", menuId).single();
+        if (!menuCheck || (menuCheck as any).businesses?.user_id !== apiKey.user_id) return err("Unauthorized", 403);
         const updates = body.updates as Record<string, unknown>;
         if (updates) {
-          await supabase.from("ivr_menus").update(updates).eq("id", menuId);
+          const safeUpdates = filterFields(updates, ALLOWED_IVR_FIELDS);
+          if (Object.keys(safeUpdates).length > 0) {
+            await supabase.from("ivr_menus").update(safeUpdates).eq("id", menuId);
+          }
         }
         const opts = body.options as Array<Record<string, unknown>>;
         if (opts) {
           await supabase.from("ivr_options").delete().eq("ivr_menu_id", menuId);
           const rows = opts.map((o) => ({
             ivr_menu_id: menuId,
-            business_id: o.business_id as string,
+            business_id: menuCheck.business_id,
             digit: o.digit as string,
             label: o.label as string,
             action: (o.action as string) || "ai_agent",
@@ -292,6 +337,9 @@ Deno.serve(async (req) => {
       case "assign_number": {
         const pnId = body.phone_number_id as string;
         if (!pnId) return err("phone_number_id required");
+        // Verify ownership
+        const { data: pnCheck } = await supabase.from("phone_numbers").select("business_id, businesses!inner(user_id)").eq("id", pnId).single();
+        if (!pnCheck || (pnCheck as any).businesses?.user_id !== apiKey.user_id) return err("Unauthorized", 403);
         const { data, error } = await supabase
           .from("phone_numbers")
           .update({
@@ -448,6 +496,7 @@ Deno.serve(async (req) => {
         const kind = body.job_kind as string;
         if (!jobId || !kind) return err("job_id and job_kind required");
         const table = kind === "marketing" ? "bulk_marketing_jobs" : "bulk_call_jobs";
+        if (!(await verifyJobOwnership(supabase, jobId, table, apiKey.user_id))) return err("Unauthorized", 403);
         const { data } = await supabase.from(table).select("*").eq("id", jobId).single();
         return ok(data);
       }
@@ -456,6 +505,7 @@ Deno.serve(async (req) => {
         const kind = body.job_kind as string;
         if (!jobId || !kind) return err("job_id and job_kind required");
         const table = kind === "marketing" ? "bulk_marketing_jobs" : "bulk_call_jobs";
+        if (!(await verifyJobOwnership(supabase, jobId, table, apiKey.user_id))) return err("Unauthorized", 403);
         await supabase.from(table).update({ status: "paused" }).eq("id", jobId);
         return ok({ paused: true });
       }
@@ -464,6 +514,7 @@ Deno.serve(async (req) => {
         const kind = body.job_kind as string;
         if (!jobId || !kind) return err("job_id and job_kind required");
         const table = kind === "marketing" ? "bulk_marketing_jobs" : "bulk_call_jobs";
+        if (!(await verifyJobOwnership(supabase, jobId, table, apiKey.user_id))) return err("Unauthorized", 403);
         await supabase.from(table).update({ status: "cancelled" }).eq("id", jobId);
         return ok({ cancelled: true });
       }
@@ -494,6 +545,9 @@ Deno.serve(async (req) => {
       case "get_call_transcript": {
         const clId = body.call_log_id as string;
         if (!clId) return err("call_log_id required");
+        // Verify ownership via call_logs -> businesses
+        const { data: clCheck } = await supabase.from("call_logs").select("business_id, businesses!inner(user_id)").eq("id", clId).single();
+        if (!clCheck || (clCheck as any).businesses?.user_id !== apiKey.user_id) return err("Unauthorized", 403);
         const { data } = await supabase
           .from("call_logs")
           .select("id,transcript,caller_name,caller_number,started_at,duration_seconds")
@@ -516,10 +570,13 @@ Deno.serve(async (req) => {
         if (!bid) return err("business_id required");
         const updates = body.updates as Record<string, unknown>;
         if (!updates) return err("updates required");
+        const safeUpdates = filterFields(updates, ALLOWED_BUSINESS_FIELDS);
+        if (Object.keys(safeUpdates).length === 0) return err("No allowed fields in updates");
         const { data, error } = await supabase
           .from("businesses")
-          .update(updates)
+          .update(safeUpdates)
           .eq("id", bid)
+          .eq("user_id", apiKey.user_id)
           .select()
           .single();
         if (error) return err(error.message);
@@ -529,10 +586,13 @@ Deno.serve(async (req) => {
         if (!bid) return err("business_id required");
         const updates = body.updates as Record<string, unknown>;
         if (!updates) return err("updates required");
+        const safeUpdates = filterFields(updates, ALLOWED_PROVIDER_FIELDS);
+        if (Object.keys(safeUpdates).length === 0) return err("No allowed fields in updates");
         const { data, error } = await supabase
           .from("businesses")
-          .update(updates)
+          .update(safeUpdates)
           .eq("id", bid)
+          .eq("user_id", apiKey.user_id)
           .select("llm_provider,llm_model,tts_provider,stt_provider,stt_model")
           .single();
         if (error) return err(error.message);
