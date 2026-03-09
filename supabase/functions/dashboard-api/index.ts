@@ -570,10 +570,13 @@ Deno.serve(async (req) => {
         if (!bid) return err("business_id required");
         const updates = body.updates as Record<string, unknown>;
         if (!updates) return err("updates required");
+        const safeUpdates = filterFields(updates, ALLOWED_BUSINESS_FIELDS);
+        if (Object.keys(safeUpdates).length === 0) return err("No allowed fields in updates");
         const { data, error } = await supabase
           .from("businesses")
-          .update(updates)
+          .update(safeUpdates)
           .eq("id", bid)
+          .eq("user_id", apiKey.user_id)
           .select()
           .single();
         if (error) return err(error.message);
@@ -583,10 +586,13 @@ Deno.serve(async (req) => {
         if (!bid) return err("business_id required");
         const updates = body.updates as Record<string, unknown>;
         if (!updates) return err("updates required");
+        const safeUpdates = filterFields(updates, ALLOWED_PROVIDER_FIELDS);
+        if (Object.keys(safeUpdates).length === 0) return err("No allowed fields in updates");
         const { data, error } = await supabase
           .from("businesses")
-          .update(updates)
+          .update(safeUpdates)
           .eq("id", bid)
+          .eq("user_id", apiKey.user_id)
           .select("llm_provider,llm_model,tts_provider,stt_provider,stt_model")
           .single();
         if (error) return err(error.message);
