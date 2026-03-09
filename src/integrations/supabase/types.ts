@@ -2293,6 +2293,7 @@ export type Database = {
           created_at: string
           id: string
           is_active: boolean
+          linked_business_ids: string[]
           notifications: Json
           user_id: string
         }
@@ -2302,6 +2303,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_active?: boolean
+          linked_business_ids?: string[]
           notifications?: Json
           user_id: string
         }
@@ -2311,6 +2313,7 @@ export type Database = {
           created_at?: string
           id?: string
           is_active?: boolean
+          linked_business_ids?: string[]
           notifications?: Json
           user_id?: string
         }

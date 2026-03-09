@@ -1,0 +1,1 @@
+ALTER TABLE public.telegram_config ADD COLUMN linked_business_ids uuid[] NOT NULL DEFAULT ARRAY[]::uuid[];
