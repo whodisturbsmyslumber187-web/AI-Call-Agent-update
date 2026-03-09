@@ -125,6 +125,7 @@ const BusinessDetail = () => {
         <TabsContent value="failover" className="mt-6"><ProviderFailoverTab businessId={business.id} /></TabsContent>
         <TabsContent value="phones" className="mt-6"><PhoneNumbersTab businessId={business.id} /></TabsContent>
         <TabsContent value="routing" className="mt-6"><RoutingRulesTab businessId={business.id} /></TabsContent>
+        <TabsContent value="ivr" className="mt-6"><IvrMenuTab businessId={business.id} /></TabsContent>
         <TabsContent value="calendar" className="mt-6"><CalendarTab businessId={business.id} /></TabsContent>
         <TabsContent value="gcal" className="mt-6"><GoogleCalendarTab businessId={business.id} /></TabsContent>
         <TabsContent value="knowledge" className="mt-6"><KnowledgeBaseTab businessId={business.id} /></TabsContent>
