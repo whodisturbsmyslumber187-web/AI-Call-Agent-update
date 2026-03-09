@@ -29,8 +29,7 @@ const TelegramConfigSection = () => {
       bulk_job_completed: true,
     },
   });
-  const [newToken, setNewToken] = useState("");
-  const [showTokenField, setShowTokenField] = useState(false);
+  const [showTokenInfo, setShowTokenInfo] = useState(false);
 
   const { data: config, isLoading } = useQuery({
     queryKey: ["telegram-config"],
