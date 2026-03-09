@@ -94,6 +94,7 @@ const BusinessDetail = () => {
           <TabsTrigger value="voicemail">Voicemail</TabsTrigger>
           <TabsTrigger value="templates">Messages</TabsTrigger>
           <TabsTrigger value="webhooks">Webhooks</TabsTrigger>
+          <TabsTrigger value="experiments">Experiments</TabsTrigger>
           {business.livekit_enabled && <TabsTrigger value="livekit">Live Call</TabsTrigger>}
         </TabsList>
 
