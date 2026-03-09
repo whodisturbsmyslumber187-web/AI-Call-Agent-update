@@ -25,6 +25,12 @@ import SlaRulesTab from "@/components/business/SlaRulesTab";
 import RevenueTab from "@/components/business/RevenueTab";
 import ExperimentsTab from "@/components/business/ExperimentsTab";
 import PersonalitySlidersCard from "@/components/business/PersonalitySlidersCard";
+import BulkCallingTab from "@/components/business/BulkCallingTab";
+import InboundCapacityTab from "@/components/business/InboundCapacityTab";
+import DncListTab from "@/components/business/DncListTab";
+import CallDispositionsTab from "@/components/business/CallDispositionsTab";
+import ContactSegmentsTab from "@/components/business/ContactSegmentsTab";
+import ProviderFailoverTab from "@/components/business/ProviderFailoverTab";
 
 const BusinessDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -79,15 +85,21 @@ const BusinessDetail = () => {
           <TabsTrigger value="settings">Agent</TabsTrigger>
           <TabsTrigger value="memory">Memory</TabsTrigger>
           <TabsTrigger value="providers">Providers</TabsTrigger>
+          <TabsTrigger value="failover">Failover</TabsTrigger>
           <TabsTrigger value="phones">Phones</TabsTrigger>
           <TabsTrigger value="routing">Routing</TabsTrigger>
           <TabsTrigger value="calendar">Calendar</TabsTrigger>
           <TabsTrigger value="gcal">Google Cal</TabsTrigger>
           <TabsTrigger value="knowledge">Knowledge</TabsTrigger>
           <TabsTrigger value="contacts">Contacts</TabsTrigger>
+          <TabsTrigger value="segments">Segments</TabsTrigger>
           <TabsTrigger value="customers">CRM</TabsTrigger>
           <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
+          <TabsTrigger value="bulk-calling">Bulk Calls</TabsTrigger>
+          <TabsTrigger value="inbound">Inbound Cap</TabsTrigger>
+          <TabsTrigger value="dnc">DNC</TabsTrigger>
           <TabsTrigger value="call-logs">Call Logs</TabsTrigger>
+          <TabsTrigger value="dispositions">Dispositions</TabsTrigger>
           <TabsTrigger value="summaries">Summaries</TabsTrigger>
           <TabsTrigger value="sla">SLA</TabsTrigger>
           <TabsTrigger value="revenue">Revenue</TabsTrigger>
@@ -106,15 +118,21 @@ const BusinessDetail = () => {
         </TabsContent>
         <TabsContent value="memory" className="mt-6"><AgentMemoryTab businessId={business.id} /></TabsContent>
         <TabsContent value="providers" className="mt-6"><ProvidersTab business={business} /></TabsContent>
+        <TabsContent value="failover" className="mt-6"><ProviderFailoverTab businessId={business.id} /></TabsContent>
         <TabsContent value="phones" className="mt-6"><PhoneNumbersTab businessId={business.id} /></TabsContent>
         <TabsContent value="routing" className="mt-6"><RoutingRulesTab businessId={business.id} /></TabsContent>
         <TabsContent value="calendar" className="mt-6"><CalendarTab businessId={business.id} /></TabsContent>
         <TabsContent value="gcal" className="mt-6"><GoogleCalendarTab businessId={business.id} /></TabsContent>
         <TabsContent value="knowledge" className="mt-6"><KnowledgeBaseTab businessId={business.id} /></TabsContent>
         <TabsContent value="contacts" className="mt-6"><ContactsTab businessId={business.id} /></TabsContent>
+        <TabsContent value="segments" className="mt-6"><ContactSegmentsTab businessId={business.id} /></TabsContent>
         <TabsContent value="customers" className="mt-6"><CustomerProfilesTab businessId={business.id} /></TabsContent>
         <TabsContent value="campaigns" className="mt-6"><CampaignsTab businessId={business.id} /></TabsContent>
+        <TabsContent value="bulk-calling" className="mt-6"><BulkCallingTab businessId={business.id} /></TabsContent>
+        <TabsContent value="inbound" className="mt-6"><InboundCapacityTab businessId={business.id} /></TabsContent>
+        <TabsContent value="dnc" className="mt-6"><DncListTab businessId={business.id} /></TabsContent>
         <TabsContent value="call-logs" className="mt-6"><CallLogsTab businessId={business.id} /></TabsContent>
+        <TabsContent value="dispositions" className="mt-6"><CallDispositionsTab businessId={business.id} /></TabsContent>
         <TabsContent value="summaries" className="mt-6"><CallSummariesTab businessId={business.id} /></TabsContent>
         <TabsContent value="sla" className="mt-6"><SlaRulesTab businessId={business.id} /></TabsContent>
         <TabsContent value="revenue" className="mt-6"><RevenueTab businessId={business.id} /></TabsContent>

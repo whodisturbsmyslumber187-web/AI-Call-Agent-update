@@ -202,10 +202,11 @@ const CommandCenter = () => {
         </Card>
       </div>
 
-      {/* Leaderboard + Revenue */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      {/* Leaderboard + Revenue + Predictive */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <LeaderboardWidget />
         <RevenueWidget />
+        <PredictiveAnalyticsWidget />
       </div>
 
       {/* Activity Feed */}
