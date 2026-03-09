@@ -254,6 +254,45 @@ export type Database = {
         }
         Relationships: []
       }
+      api_keys: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          key_hash: string
+          key_prefix: string
+          last_used_at: string | null
+          name: string
+          permissions: Json
+          rate_limit: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          key_hash?: string
+          key_prefix?: string
+          last_used_at?: string | null
+          name?: string
+          permissions?: Json
+          rate_limit?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          key_hash?: string
+          key_prefix?: string
+          last_used_at?: string | null
+          name?: string
+          permissions?: Json
+          rate_limit?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       approval_requests: {
         Row: {
           approved_by: string | null
@@ -329,6 +368,138 @@ export type Database = {
             columns: ["business_id"]
             isOneToOne: false
             referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bulk_call_entries: {
+        Row: {
+          attempt_count: number
+          business_id: string
+          contact_name: string
+          contact_phone: string
+          created_at: string
+          duration_seconds: number | null
+          id: string
+          job_id: string
+          last_attempt_at: string | null
+          max_attempts: number
+          outcome: string | null
+          status: string
+          transcript_summary: string | null
+        }
+        Insert: {
+          attempt_count?: number
+          business_id: string
+          contact_name?: string
+          contact_phone?: string
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          job_id: string
+          last_attempt_at?: string | null
+          max_attempts?: number
+          outcome?: string | null
+          status?: string
+          transcript_summary?: string | null
+        }
+        Update: {
+          attempt_count?: number
+          business_id?: string
+          contact_name?: string
+          contact_phone?: string
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          job_id?: string
+          last_attempt_at?: string | null
+          max_attempts?: number
+          outcome?: string | null
+          status?: string
+          transcript_summary?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bulk_call_entries_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bulk_call_entries_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "bulk_call_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bulk_call_jobs: {
+        Row: {
+          business_id: string
+          calls_per_minute: number
+          campaign_id: string | null
+          completed: number
+          completed_at: string | null
+          concurrency_limit: number
+          created_at: string
+          failed: number
+          id: string
+          in_progress: number
+          job_type: string
+          name: string
+          started_at: string | null
+          status: string
+          total_contacts: number
+        }
+        Insert: {
+          business_id: string
+          calls_per_minute?: number
+          campaign_id?: string | null
+          completed?: number
+          completed_at?: string | null
+          concurrency_limit?: number
+          created_at?: string
+          failed?: number
+          id?: string
+          in_progress?: number
+          job_type?: string
+          name?: string
+          started_at?: string | null
+          status?: string
+          total_contacts?: number
+        }
+        Update: {
+          business_id?: string
+          calls_per_minute?: number
+          campaign_id?: string | null
+          completed?: number
+          completed_at?: string | null
+          concurrency_limit?: number
+          created_at?: string
+          failed?: number
+          id?: string
+          in_progress?: number
+          job_type?: string
+          name?: string
+          started_at?: string | null
+          status?: string
+          total_contacts?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bulk_call_jobs_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bulk_call_jobs_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
             referencedColumns: ["id"]
           },
         ]
@@ -478,6 +649,54 @@ export type Database = {
             columns: ["business_id"]
             isOneToOne: true
             referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      call_dispositions: {
+        Row: {
+          business_id: string
+          call_log_id: string
+          created_at: string
+          disposition: string
+          id: string
+          next_action: string | null
+          next_action_date: string | null
+          notes: string
+        }
+        Insert: {
+          business_id: string
+          call_log_id: string
+          created_at?: string
+          disposition?: string
+          id?: string
+          next_action?: string | null
+          next_action_date?: string | null
+          notes?: string
+        }
+        Update: {
+          business_id?: string
+          call_log_id?: string
+          created_at?: string
+          disposition?: string
+          id?: string
+          next_action?: string | null
+          next_action_date?: string | null
+          notes?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "call_dispositions_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "call_dispositions_call_log_id_fkey"
+            columns: ["call_log_id"]
+            isOneToOne: false
+            referencedRelation: "call_logs"
             referencedColumns: ["id"]
           },
         ]
@@ -706,6 +925,60 @@ export type Database = {
           },
         ]
       }
+      call_transfers: {
+        Row: {
+          business_id: string
+          call_log_id: string
+          completed_at: string | null
+          context_summary: string
+          created_at: string
+          id: string
+          initiated_at: string
+          status: string
+          transfer_to: string
+          transfer_type: string
+        }
+        Insert: {
+          business_id: string
+          call_log_id: string
+          completed_at?: string | null
+          context_summary?: string
+          created_at?: string
+          id?: string
+          initiated_at?: string
+          status?: string
+          transfer_to?: string
+          transfer_type?: string
+        }
+        Update: {
+          business_id?: string
+          call_log_id?: string
+          completed_at?: string | null
+          context_summary?: string
+          created_at?: string
+          id?: string
+          initiated_at?: string
+          status?: string
+          transfer_to?: string
+          transfer_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "call_transfers_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "call_transfers_call_log_id_fkey"
+            columns: ["call_log_id"]
+            isOneToOne: false
+            referencedRelation: "call_logs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaign_contacts: {
         Row: {
           call_status: string
@@ -754,27 +1027,42 @@ export type Database = {
       campaigns: {
         Row: {
           business_id: string
+          calls_per_minute: number
+          campaign_type: string
+          concurrency_limit: number
           created_at: string
           id: string
+          max_retries: number
           name: string
+          retry_delay_minutes: number
           scheduled_at: string | null
           script: string
           status: string
         }
         Insert: {
           business_id: string
+          calls_per_minute?: number
+          campaign_type?: string
+          concurrency_limit?: number
           created_at?: string
           id?: string
+          max_retries?: number
           name: string
+          retry_delay_minutes?: number
           scheduled_at?: string | null
           script?: string
           status?: string
         }
         Update: {
           business_id?: string
+          calls_per_minute?: number
+          campaign_type?: string
+          concurrency_limit?: number
           created_at?: string
           id?: string
+          max_retries?: number
           name?: string
+          retry_delay_minutes?: number
           scheduled_at?: string | null
           script?: string
           status?: string
@@ -827,6 +1115,38 @@ export type Database = {
             columns: ["call_log_id"]
             isOneToOne: false
             referencedRelation: "call_logs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contact_segments: {
+        Row: {
+          business_id: string
+          created_at: string
+          filter_criteria: Json
+          id: string
+          name: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          filter_criteria?: Json
+          id?: string
+          name?: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          filter_criteria?: Json
+          id?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contact_segments_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
             referencedColumns: ["id"]
           },
         ]
@@ -995,6 +1315,76 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      dnc_list: {
+        Row: {
+          added_at: string
+          business_id: string
+          id: string
+          phone_number: string
+          reason: string
+        }
+        Insert: {
+          added_at?: string
+          business_id: string
+          id?: string
+          phone_number: string
+          reason?: string
+        }
+        Update: {
+          added_at?: string
+          business_id?: string
+          id?: string
+          phone_number?: string
+          reason?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dnc_list_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inbound_capacity_config: {
+        Row: {
+          auto_scale: boolean
+          business_id: string
+          created_at: string
+          id: string
+          max_concurrent_calls: number
+          overflow_action: string
+          overflow_target: string
+        }
+        Insert: {
+          auto_scale?: boolean
+          business_id: string
+          created_at?: string
+          id?: string
+          max_concurrent_calls?: number
+          overflow_action?: string
+          overflow_target?: string
+        }
+        Update: {
+          auto_scale?: boolean
+          business_id?: string
+          created_at?: string
+          id?: string
+          max_concurrent_calls?: number
+          overflow_action?: string
+          overflow_target?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inbound_capacity_config_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: true
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       industry_templates: {
         Row: {
@@ -1214,6 +1604,47 @@ export type Database = {
         }
         Relationships: []
       }
+      provider_failover_config: {
+        Row: {
+          backup_provider: string
+          business_id: string
+          created_at: string
+          current_failure_count: number
+          id: string
+          is_failed_over: boolean
+          max_failures_before_switch: number
+          primary_provider: string
+        }
+        Insert: {
+          backup_provider?: string
+          business_id: string
+          created_at?: string
+          current_failure_count?: number
+          id?: string
+          is_failed_over?: boolean
+          max_failures_before_switch?: number
+          primary_provider?: string
+        }
+        Update: {
+          backup_provider?: string
+          business_id?: string
+          created_at?: string
+          current_failure_count?: number
+          id?: string
+          is_failed_over?: boolean
+          max_failures_before_switch?: number
+          primary_provider?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_failover_config_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: true
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reservations: {
         Row: {
           business_id: string | null
@@ -1421,6 +1852,60 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      telegram_commands_log: {
+        Row: {
+          command: string
+          created_at: string
+          id: string
+          response_summary: string
+          user_id: string
+        }
+        Insert: {
+          command?: string
+          created_at?: string
+          id?: string
+          response_summary?: string
+          user_id: string
+        }
+        Update: {
+          command?: string
+          created_at?: string
+          id?: string
+          response_summary?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      telegram_config: {
+        Row: {
+          bot_token_secret_name: string
+          chat_id: string
+          created_at: string
+          id: string
+          is_active: boolean
+          notifications: Json
+          user_id: string
+        }
+        Insert: {
+          bot_token_secret_name?: string
+          chat_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          notifications?: Json
+          user_id: string
+        }
+        Update: {
+          bot_token_secret_name?: string
+          chat_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          notifications?: Json
+          user_id?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {
