@@ -97,6 +97,7 @@ const BusinessDetail = () => {
           <TabsTrigger value="customers">CRM</TabsTrigger>
           <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
           <TabsTrigger value="bulk-calling">Bulk Calls</TabsTrigger>
+          <TabsTrigger value="marketing">Marketing</TabsTrigger>
           <TabsTrigger value="inbound">Inbound Cap</TabsTrigger>
           <TabsTrigger value="dnc">DNC</TabsTrigger>
           <TabsTrigger value="call-logs">Call Logs</TabsTrigger>
