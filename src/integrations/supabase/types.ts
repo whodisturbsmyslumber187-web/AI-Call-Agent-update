@@ -14,6 +14,97 @@ export type Database = {
   }
   public: {
     Tables: {
+      ab_tests: {
+        Row: {
+          business_id: string
+          created_at: string
+          ended_at: string | null
+          id: string
+          name: string
+          started_at: string | null
+          status: string
+          traffic_split: number
+          variant_a_instructions: string
+          variant_b_instructions: string
+          winner: string | null
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          name?: string
+          started_at?: string | null
+          status?: string
+          traffic_split?: number
+          variant_a_instructions?: string
+          variant_b_instructions?: string
+          winner?: string | null
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          name?: string
+          started_at?: string | null
+          status?: string
+          traffic_split?: number
+          variant_a_instructions?: string
+          variant_b_instructions?: string
+          winner?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ab_tests_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      activity_log: {
+        Row: {
+          action: string
+          business_id: string | null
+          created_at: string
+          entity_id: string | null
+          entity_type: string
+          id: string
+          metadata: Json
+          user_id: string | null
+        }
+        Insert: {
+          action?: string
+          business_id?: string | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          metadata?: Json
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          business_id?: string | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          metadata?: Json
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_log_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agent_chat_messages: {
         Row: {
           created_at: string
@@ -248,7 +339,9 @@ export type Database = {
           closing_techniques: string
           created_at: string
           default_language: string
+          greeting_audio_url: string | null
           greeting_message: string
+          hold_music_url: string | null
           id: string
           industry: string
           instructions: string
@@ -261,6 +354,10 @@ export type Database = {
           llm_provider: string
           name: string
           objection_handling: string
+          personality_formality: number
+          personality_friendliness: number
+          personality_humor: number
+          personality_urgency: number
           sales_script: string
           status: string
           supported_languages: string[]
@@ -279,7 +376,9 @@ export type Database = {
           closing_techniques?: string
           created_at?: string
           default_language?: string
+          greeting_audio_url?: string | null
           greeting_message?: string
+          hold_music_url?: string | null
           id?: string
           industry?: string
           instructions?: string
@@ -292,6 +391,10 @@ export type Database = {
           llm_provider?: string
           name: string
           objection_handling?: string
+          personality_formality?: number
+          personality_friendliness?: number
+          personality_humor?: number
+          personality_urgency?: number
           sales_script?: string
           status?: string
           supported_languages?: string[]
@@ -310,7 +413,9 @@ export type Database = {
           closing_techniques?: string
           created_at?: string
           default_language?: string
+          greeting_audio_url?: string | null
           greeting_message?: string
+          hold_music_url?: string | null
           id?: string
           industry?: string
           instructions?: string
@@ -323,6 +428,10 @@ export type Database = {
           llm_provider?: string
           name?: string
           objection_handling?: string
+          personality_formality?: number
+          personality_friendliness?: number
+          personality_humor?: number
+          personality_urgency?: number
           sales_script?: string
           status?: string
           supported_languages?: string[]
@@ -676,6 +785,48 @@ export type Database = {
             columns: ["business_id"]
             isOneToOne: false
             referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      competitor_mentions: {
+        Row: {
+          business_id: string
+          call_log_id: string | null
+          competitor_name: string
+          context: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          business_id: string
+          call_log_id?: string | null
+          competitor_name?: string
+          context?: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          business_id?: string
+          call_log_id?: string | null
+          competitor_name?: string
+          context?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "competitor_mentions_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "competitor_mentions_call_log_id_fkey"
+            columns: ["call_log_id"]
+            isOneToOne: false
+            referencedRelation: "call_logs"
             referencedColumns: ["id"]
           },
         ]
@@ -1157,6 +1308,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      scheduled_reports: {
+        Row: {
+          created_at: string
+          frequency: string
+          id: string
+          is_active: boolean
+          last_sent_at: string | null
+          recipients: string[]
+          report_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          frequency?: string
+          id?: string
+          is_active?: boolean
+          last_sent_at?: string | null
+          recipients?: string[]
+          report_type?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          frequency?: string
+          id?: string
+          is_active?: boolean
+          last_sent_at?: string | null
+          recipients?: string[]
+          report_type?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       sla_alerts: {
         Row: {

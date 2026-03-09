@@ -19,6 +19,7 @@ import AgentHub from "./pages/AgentHub";
 import Approvals from "./pages/Approvals";
 import CommandCenter from "./pages/CommandCenter";
 import Auth from "./pages/Auth";
+import ActivityPage from "./pages/ActivityPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -49,6 +50,7 @@ const App = () => (
                 <Route path="agent-hub" element={<AgentHub />} />
                 <Route path="approvals" element={<Approvals />} />
                 <Route path="analytics" element={<Analytics />} />
+                <Route path="activity" element={<ActivityPage />} />
                 <Route path="settings" element={<Settings />} />
               </Route>
 

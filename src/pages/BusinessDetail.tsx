@@ -23,6 +23,8 @@ import MessageTemplatesTab from "@/components/business/MessageTemplatesTab";
 import CallSummariesTab from "@/components/business/CallSummariesTab";
 import SlaRulesTab from "@/components/business/SlaRulesTab";
 import RevenueTab from "@/components/business/RevenueTab";
+import ExperimentsTab from "@/components/business/ExperimentsTab";
+import PersonalitySlidersCard from "@/components/business/PersonalitySlidersCard";
 
 const BusinessDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -92,10 +94,16 @@ const BusinessDetail = () => {
           <TabsTrigger value="voicemail">Voicemail</TabsTrigger>
           <TabsTrigger value="templates">Messages</TabsTrigger>
           <TabsTrigger value="webhooks">Webhooks</TabsTrigger>
+          <TabsTrigger value="experiments">Experiments</TabsTrigger>
           {business.livekit_enabled && <TabsTrigger value="livekit">Live Call</TabsTrigger>}
         </TabsList>
 
-        <TabsContent value="settings" className="mt-6"><BusinessSettingsTab business={business} /></TabsContent>
+        <TabsContent value="settings" className="mt-6">
+          <div className="grid gap-6 lg:grid-cols-[1fr,320px]">
+            <BusinessSettingsTab business={business} />
+            <PersonalitySlidersCard business={business} />
+          </div>
+        </TabsContent>
         <TabsContent value="memory" className="mt-6"><AgentMemoryTab businessId={business.id} /></TabsContent>
         <TabsContent value="providers" className="mt-6"><ProvidersTab business={business} /></TabsContent>
         <TabsContent value="phones" className="mt-6"><PhoneNumbersTab businessId={business.id} /></TabsContent>
@@ -113,6 +121,7 @@ const BusinessDetail = () => {
         <TabsContent value="voicemail" className="mt-6"><VoicemailTab businessId={business.id} /></TabsContent>
         <TabsContent value="templates" className="mt-6"><MessageTemplatesTab businessId={business.id} /></TabsContent>
         <TabsContent value="webhooks" className="mt-6"><WebhooksTab businessId={business.id} /></TabsContent>
+        <TabsContent value="experiments" className="mt-6"><ExperimentsTab businessId={business.id} /></TabsContent>
         {business.livekit_enabled && (
           <TabsContent value="livekit" className="mt-6">
             <LiveKitCallTab businessId={business.id} businessName={business.name} />
