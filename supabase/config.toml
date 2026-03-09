@@ -14,3 +14,6 @@ verify_jwt = false
 
 [functions.livekit-token]
 verify_jwt = false
+
+[functions.sip-webhook]
+verify_jwt = false

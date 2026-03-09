@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { Building2, Mic, MessageSquare, Calendar, Settings, LogOut } from "lucide-react";
+import { Building2, Mic, MessageSquare, Calendar, Settings, LogOut, Activity, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,8 @@ const navItems = [
   { to: "/live-demo", icon: Mic, label: "Live Demo" },
   { to: "/conversations", icon: MessageSquare, label: "Conversations" },
   { to: "/reservations", icon: Calendar, label: "Reservations" },
+  { to: "/monitoring", icon: Activity, label: "Live Monitor" },
+  { to: "/analytics", icon: BarChart3, label: "Analytics" },
   { to: "/settings", icon: Settings, label: "Settings" },
 ];
 

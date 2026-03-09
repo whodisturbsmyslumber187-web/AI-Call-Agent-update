@@ -157,6 +157,94 @@ export type Database = {
         }
         Relationships: []
       }
+      calendar_connections: {
+        Row: {
+          business_id: string
+          created_at: string
+          google_calendar_id: string | null
+          id: string
+          last_synced_at: string | null
+          sync_enabled: boolean
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          google_calendar_id?: string | null
+          id?: string
+          last_synced_at?: string | null
+          sync_enabled?: boolean
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          google_calendar_id?: string | null
+          id?: string
+          last_synced_at?: string | null
+          sync_enabled?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_connections_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: true
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      call_logs: {
+        Row: {
+          business_id: string
+          caller_name: string | null
+          caller_number: string | null
+          created_at: string
+          direction: string
+          duration_seconds: number | null
+          ended_at: string | null
+          id: string
+          outcome: string | null
+          recording_url: string | null
+          started_at: string
+          transcript: string | null
+        }
+        Insert: {
+          business_id: string
+          caller_name?: string | null
+          caller_number?: string | null
+          created_at?: string
+          direction?: string
+          duration_seconds?: number | null
+          ended_at?: string | null
+          id?: string
+          outcome?: string | null
+          recording_url?: string | null
+          started_at?: string
+          transcript?: string | null
+        }
+        Update: {
+          business_id?: string
+          caller_name?: string | null
+          caller_number?: string | null
+          created_at?: string
+          direction?: string
+          duration_seconds?: number | null
+          ended_at?: string | null
+          id?: string
+          outcome?: string | null
+          recording_url?: string | null
+          started_at?: string
+          transcript?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "call_logs_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaign_contacts: {
         Row: {
           call_status: string
@@ -312,6 +400,47 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "conversations_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      knowledge_base_items: {
+        Row: {
+          business_id: string
+          content: string
+          created_at: string
+          file_name: string | null
+          file_type: string | null
+          file_url: string | null
+          id: string
+          title: string
+        }
+        Insert: {
+          business_id: string
+          content?: string
+          created_at?: string
+          file_name?: string | null
+          file_type?: string | null
+          file_url?: string | null
+          id?: string
+          title: string
+        }
+        Update: {
+          business_id?: string
+          content?: string
+          created_at?: string
+          file_name?: string | null
+          file_type?: string | null
+          file_url?: string | null
+          id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "knowledge_base_items_business_id_fkey"
             columns: ["business_id"]
             isOneToOne: false
             referencedRelation: "businesses"

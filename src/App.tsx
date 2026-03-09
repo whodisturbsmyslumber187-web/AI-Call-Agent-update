@@ -13,6 +13,8 @@ import Reservations from "./pages/Reservations";
 import Settings from "./pages/Settings";
 import Businesses from "./pages/Businesses";
 import BusinessDetail from "./pages/BusinessDetail";
+import LiveMonitoring from "./pages/LiveMonitoring";
+import Analytics from "./pages/Analytics";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -39,6 +41,8 @@ const App = () => (
                 <Route path="live-demo" element={<LiveDemo />} />
                 <Route path="conversations" element={<Conversations />} />
                 <Route path="reservations" element={<Reservations />} />
+                <Route path="monitoring" element={<LiveMonitoring />} />
+                <Route path="analytics" element={<Analytics />} />
                 <Route path="settings" element={<Settings />} />
               </Route>
 

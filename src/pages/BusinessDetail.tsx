@@ -11,6 +11,9 @@ import ContactsTab from "@/components/business/ContactsTab";
 import CampaignsTab from "@/components/business/CampaignsTab";
 import ProvidersTab from "@/components/business/ProvidersTab";
 import LiveKitCallTab from "@/components/business/LiveKitCallTab";
+import KnowledgeBaseTab from "@/components/business/KnowledgeBaseTab";
+import CallLogsTab from "@/components/business/CallLogsTab";
+import GoogleCalendarTab from "@/components/business/GoogleCalendarTab";
 
 const BusinessDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -61,13 +64,16 @@ const BusinessDetail = () => {
       </div>
 
       <Tabs defaultValue="settings" className="w-full">
-        <TabsList className="flex w-full max-w-4xl overflow-x-auto">
+        <TabsList className="flex w-full max-w-5xl overflow-x-auto">
           <TabsTrigger value="settings">Agent</TabsTrigger>
           <TabsTrigger value="providers">Providers</TabsTrigger>
-          <TabsTrigger value="phones">Phone Numbers</TabsTrigger>
+          <TabsTrigger value="phones">Phones</TabsTrigger>
           <TabsTrigger value="calendar">Calendar</TabsTrigger>
+          <TabsTrigger value="gcal">Google Cal</TabsTrigger>
+          <TabsTrigger value="knowledge">Knowledge</TabsTrigger>
           <TabsTrigger value="contacts">Contacts</TabsTrigger>
           <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
+          <TabsTrigger value="call-logs">Call Logs</TabsTrigger>
           {business.livekit_enabled && <TabsTrigger value="livekit">Live Call</TabsTrigger>}
         </TabsList>
 
@@ -83,11 +89,20 @@ const BusinessDetail = () => {
         <TabsContent value="calendar" className="mt-6">
           <CalendarTab businessId={business.id} />
         </TabsContent>
+        <TabsContent value="gcal" className="mt-6">
+          <GoogleCalendarTab businessId={business.id} />
+        </TabsContent>
+        <TabsContent value="knowledge" className="mt-6">
+          <KnowledgeBaseTab businessId={business.id} />
+        </TabsContent>
         <TabsContent value="contacts" className="mt-6">
           <ContactsTab businessId={business.id} />
         </TabsContent>
         <TabsContent value="campaigns" className="mt-6">
           <CampaignsTab businessId={business.id} />
+        </TabsContent>
+        <TabsContent value="call-logs" className="mt-6">
+          <CallLogsTab businessId={business.id} />
         </TabsContent>
         {business.livekit_enabled && (
           <TabsContent value="livekit" className="mt-6">
