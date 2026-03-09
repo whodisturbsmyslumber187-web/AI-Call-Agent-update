@@ -131,6 +131,7 @@ const BusinessDetail = () => {
         <TabsContent value="customers" className="mt-6"><CustomerProfilesTab businessId={business.id} /></TabsContent>
         <TabsContent value="campaigns" className="mt-6"><CampaignsTab businessId={business.id} /></TabsContent>
         <TabsContent value="bulk-calling" className="mt-6"><BulkCallingTab businessId={business.id} /></TabsContent>
+        <TabsContent value="marketing" className="mt-6"><MarketingCampaignsTab businessId={business.id} /></TabsContent>
         <TabsContent value="inbound" className="mt-6"><InboundCapacityTab businessId={business.id} /></TabsContent>
         <TabsContent value="dnc" className="mt-6"><DncListTab businessId={business.id} /></TabsContent>
         <TabsContent value="call-logs" className="mt-6"><CallLogsTab businessId={business.id} /></TabsContent>
