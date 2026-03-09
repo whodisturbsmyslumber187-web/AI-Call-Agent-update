@@ -85,20 +85,8 @@ const TelegramConfigSection = () => {
     onError: () => toast({ title: "Error saving config", variant: "destructive" }),
   });
 
-  const updateToken = useMutation({
-    mutationFn: async () => {
-      const res = await supabase.functions.invoke("telegram-bot", {
-        body: { action: "update_token", user_id: user!.id, new_token: newToken },
-      });
-      if (res.error) throw res.error;
-    },
-    onSuccess: () => {
-      toast({ title: "Bot token updated successfully" });
-      setNewToken("");
-      setShowTokenField(false);
-    },
-    onError: () => toast({ title: "Failed to update token", variant: "destructive" }),
-  });
+
+
 
   const setWebhook = useMutation({
     mutationFn: async () => {
