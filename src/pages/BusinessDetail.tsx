@@ -23,6 +23,8 @@ import MessageTemplatesTab from "@/components/business/MessageTemplatesTab";
 import CallSummariesTab from "@/components/business/CallSummariesTab";
 import SlaRulesTab from "@/components/business/SlaRulesTab";
 import RevenueTab from "@/components/business/RevenueTab";
+import ExperimentsTab from "@/components/business/ExperimentsTab";
+import PersonalitySlidersCard from "@/components/business/PersonalitySlidersCard";
 
 const BusinessDetail = () => {
   const { id } = useParams<{ id: string }>();
