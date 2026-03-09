@@ -20,6 +20,9 @@ import CustomerProfilesTab from "@/components/business/CustomerProfilesTab";
 import VoicemailTab from "@/components/business/VoicemailTab";
 import WebhooksTab from "@/components/business/WebhooksTab";
 import MessageTemplatesTab from "@/components/business/MessageTemplatesTab";
+import CallSummariesTab from "@/components/business/CallSummariesTab";
+import SlaRulesTab from "@/components/business/SlaRulesTab";
+import RevenueTab from "@/components/business/RevenueTab";
 
 const BusinessDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -70,7 +73,7 @@ const BusinessDetail = () => {
       </div>
 
       <Tabs defaultValue="settings" className="w-full">
-        <TabsList className="flex w-full max-w-6xl overflow-x-auto">
+        <TabsList className="flex w-full max-w-7xl overflow-x-auto">
           <TabsTrigger value="settings">Agent</TabsTrigger>
           <TabsTrigger value="memory">Memory</TabsTrigger>
           <TabsTrigger value="providers">Providers</TabsTrigger>
@@ -83,6 +86,9 @@ const BusinessDetail = () => {
           <TabsTrigger value="customers">CRM</TabsTrigger>
           <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
           <TabsTrigger value="call-logs">Call Logs</TabsTrigger>
+          <TabsTrigger value="summaries">Summaries</TabsTrigger>
+          <TabsTrigger value="sla">SLA</TabsTrigger>
+          <TabsTrigger value="revenue">Revenue</TabsTrigger>
           <TabsTrigger value="voicemail">Voicemail</TabsTrigger>
           <TabsTrigger value="templates">Messages</TabsTrigger>
           <TabsTrigger value="webhooks">Webhooks</TabsTrigger>
@@ -101,6 +107,9 @@ const BusinessDetail = () => {
         <TabsContent value="customers" className="mt-6"><CustomerProfilesTab businessId={business.id} /></TabsContent>
         <TabsContent value="campaigns" className="mt-6"><CampaignsTab businessId={business.id} /></TabsContent>
         <TabsContent value="call-logs" className="mt-6"><CallLogsTab businessId={business.id} /></TabsContent>
+        <TabsContent value="summaries" className="mt-6"><CallSummariesTab businessId={business.id} /></TabsContent>
+        <TabsContent value="sla" className="mt-6"><SlaRulesTab businessId={business.id} /></TabsContent>
+        <TabsContent value="revenue" className="mt-6"><RevenueTab businessId={business.id} /></TabsContent>
         <TabsContent value="voicemail" className="mt-6"><VoicemailTab businessId={business.id} /></TabsContent>
         <TabsContent value="templates" className="mt-6"><MessageTemplatesTab businessId={business.id} /></TabsContent>
         <TabsContent value="webhooks" className="mt-6"><WebhooksTab businessId={business.id} /></TabsContent>
