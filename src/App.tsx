@@ -15,6 +15,9 @@ import Businesses from "./pages/Businesses";
 import BusinessDetail from "./pages/BusinessDetail";
 import LiveMonitoring from "./pages/LiveMonitoring";
 import Analytics from "./pages/Analytics";
+import AgentHub from "./pages/AgentHub";
+import Approvals from "./pages/Approvals";
+import CommandCenter from "./pages/CommandCenter";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -42,6 +45,9 @@ const App = () => (
                 <Route path="conversations" element={<Conversations />} />
                 <Route path="reservations" element={<Reservations />} />
                 <Route path="monitoring" element={<LiveMonitoring />} />
+                <Route path="command-center" element={<CommandCenter />} />
+                <Route path="agent-hub" element={<AgentHub />} />
+                <Route path="approvals" element={<Approvals />} />
                 <Route path="analytics" element={<Analytics />} />
                 <Route path="settings" element={<Settings />} />
               </Route>

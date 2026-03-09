@@ -17,3 +17,15 @@ verify_jwt = false
 
 [functions.sip-webhook]
 verify_jwt = false
+
+[functions.extract-learnings]
+verify_jwt = false
+
+[functions.agent-collaborate]
+verify_jwt = false
+
+[functions.score-call]
+verify_jwt = false
+
+[functions.send-followup]
+verify_jwt = false
