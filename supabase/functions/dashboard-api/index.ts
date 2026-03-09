@@ -222,9 +222,11 @@ Deno.serve(async (req) => {
         if (!bid) return err("business_id required");
         const updates = body.updates as Record<string, unknown>;
         if (!updates) return err("updates object required");
+        const safeUpdates = filterFields(updates, ALLOWED_BUSINESS_FIELDS);
+        if (Object.keys(safeUpdates).length === 0) return err("No allowed fields in updates");
         const { data, error } = await supabase
           .from("businesses")
-          .update(updates)
+          .update(safeUpdates)
           .eq("id", bid)
           .eq("user_id", apiKey.user_id)
           .select()
