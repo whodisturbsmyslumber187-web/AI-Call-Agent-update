@@ -855,6 +855,8 @@ Deno.serve(async (req) => {
         return err(`Unknown action: ${action}. Use action 'help' to see all ${Object.keys(API_DOCS.actions).length} available actions.`);
     }
   } catch (e) {
-    return err(e.message || "Internal error", 500);
+    const ref = crypto.randomUUID().slice(0, 8);
+    console.error(`[${ref}] Unhandled error:`, e);
+    return err(`Internal error (ref: ${ref})`, 500);
   }
 });
