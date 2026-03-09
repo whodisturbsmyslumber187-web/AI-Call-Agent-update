@@ -31,6 +31,7 @@ import DncListTab from "@/components/business/DncListTab";
 import CallDispositionsTab from "@/components/business/CallDispositionsTab";
 import ContactSegmentsTab from "@/components/business/ContactSegmentsTab";
 import ProviderFailoverTab from "@/components/business/ProviderFailoverTab";
+import MarketingCampaignsTab from "@/components/business/MarketingCampaignsTab";
 
 const BusinessDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -96,6 +97,7 @@ const BusinessDetail = () => {
           <TabsTrigger value="customers">CRM</TabsTrigger>
           <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
           <TabsTrigger value="bulk-calling">Bulk Calls</TabsTrigger>
+          <TabsTrigger value="marketing">Marketing</TabsTrigger>
           <TabsTrigger value="inbound">Inbound Cap</TabsTrigger>
           <TabsTrigger value="dnc">DNC</TabsTrigger>
           <TabsTrigger value="call-logs">Call Logs</TabsTrigger>
@@ -129,6 +131,7 @@ const BusinessDetail = () => {
         <TabsContent value="customers" className="mt-6"><CustomerProfilesTab businessId={business.id} /></TabsContent>
         <TabsContent value="campaigns" className="mt-6"><CampaignsTab businessId={business.id} /></TabsContent>
         <TabsContent value="bulk-calling" className="mt-6"><BulkCallingTab businessId={business.id} /></TabsContent>
+        <TabsContent value="marketing" className="mt-6"><MarketingCampaignsTab businessId={business.id} /></TabsContent>
         <TabsContent value="inbound" className="mt-6"><InboundCapacityTab businessId={business.id} /></TabsContent>
         <TabsContent value="dnc" className="mt-6"><DncListTab businessId={business.id} /></TabsContent>
         <TabsContent value="call-logs" className="mt-6"><CallLogsTab businessId={business.id} /></TabsContent>
