@@ -137,6 +137,9 @@ const TelegramConfigSection = () => {
           <Button className="flex-1" onClick={() => save.mutate()} disabled={save.isPending}>
             {save.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}Save Config
           </Button>
+          <Button variant="outline" onClick={() => setWebhook.mutate()} disabled={setWebhook.isPending || !form.chat_id}>
+            {setWebhook.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Zap className="mr-2 h-4 w-4" />}Set Webhook
+          </Button>
           <Button variant="outline" onClick={() => testConnection.mutate()} disabled={testConnection.isPending || !form.chat_id}>
             {testConnection.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}Test
           </Button>
