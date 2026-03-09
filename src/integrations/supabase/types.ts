@@ -14,16 +14,480 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      agent_config: {
+        Row: {
+          created_at: string
+          id: string
+          instructions: string
+          menu: string
+          restaurant_hours: string
+          restaurant_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          instructions?: string
+          menu?: string
+          restaurant_hours?: string
+          restaurant_name?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          instructions?: string
+          menu?: string
+          restaurant_hours?: string
+          restaurant_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      availability_slots: {
+        Row: {
+          business_id: string
+          created_at: string
+          day_of_week: number
+          end_time: string
+          id: string
+          is_available: boolean
+          start_time: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          day_of_week: number
+          end_time: string
+          id?: string
+          is_available?: boolean
+          start_time: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          day_of_week?: number
+          end_time?: string
+          id?: string
+          is_available?: boolean
+          start_time?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "availability_slots_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      businesses: {
+        Row: {
+          created_at: string
+          greeting_message: string
+          id: string
+          industry: string
+          instructions: string
+          knowledge_base: string
+          livekit_enabled: boolean
+          livekit_room_prefix: string | null
+          llm_api_endpoint: string | null
+          llm_api_key_name: string | null
+          llm_model: string
+          llm_provider: string
+          name: string
+          status: string
+          timezone: string
+          tts_api_endpoint: string | null
+          tts_api_key_name: string | null
+          tts_provider: string
+          tts_voice_id: string | null
+          updated_at: string
+          user_id: string
+          voice: string
+        }
+        Insert: {
+          created_at?: string
+          greeting_message?: string
+          id?: string
+          industry?: string
+          instructions?: string
+          knowledge_base?: string
+          livekit_enabled?: boolean
+          livekit_room_prefix?: string | null
+          llm_api_endpoint?: string | null
+          llm_api_key_name?: string | null
+          llm_model?: string
+          llm_provider?: string
+          name: string
+          status?: string
+          timezone?: string
+          tts_api_endpoint?: string | null
+          tts_api_key_name?: string | null
+          tts_provider?: string
+          tts_voice_id?: string | null
+          updated_at?: string
+          user_id: string
+          voice?: string
+        }
+        Update: {
+          created_at?: string
+          greeting_message?: string
+          id?: string
+          industry?: string
+          instructions?: string
+          knowledge_base?: string
+          livekit_enabled?: boolean
+          livekit_room_prefix?: string | null
+          llm_api_endpoint?: string | null
+          llm_api_key_name?: string | null
+          llm_model?: string
+          llm_provider?: string
+          name?: string
+          status?: string
+          timezone?: string
+          tts_api_endpoint?: string | null
+          tts_api_key_name?: string | null
+          tts_provider?: string
+          tts_voice_id?: string | null
+          updated_at?: string
+          user_id?: string
+          voice?: string
+        }
+        Relationships: []
+      }
+      campaign_contacts: {
+        Row: {
+          call_status: string
+          called_at: string | null
+          campaign_id: string
+          contact_id: string
+          created_at: string
+          duration_seconds: number | null
+          id: string
+        }
+        Insert: {
+          call_status?: string
+          called_at?: string | null
+          campaign_id: string
+          contact_id: string
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+        }
+        Update: {
+          call_status?: string
+          called_at?: string | null
+          campaign_id?: string
+          contact_id?: string
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_contacts_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaign_contacts_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaigns: {
+        Row: {
+          business_id: string
+          created_at: string
+          id: string
+          name: string
+          scheduled_at: string | null
+          script: string
+          status: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          id?: string
+          name: string
+          scheduled_at?: string | null
+          script?: string
+          status?: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          id?: string
+          name?: string
+          scheduled_at?: string | null
+          script?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaigns_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contacts: {
+        Row: {
+          business_id: string
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          notes: string | null
+          phone: string | null
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contacts_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversations: {
+        Row: {
+          business_id: string | null
+          created_at: string
+          customer_name: string | null
+          duration_seconds: number | null
+          ended_at: string | null
+          id: string
+          started_at: string
+          status: string
+        }
+        Insert: {
+          business_id?: string | null
+          created_at?: string
+          customer_name?: string | null
+          duration_seconds?: number | null
+          ended_at?: string | null
+          id?: string
+          started_at?: string
+          status?: string
+        }
+        Update: {
+          business_id?: string | null
+          created_at?: string
+          customer_name?: string | null
+          duration_seconds?: number | null
+          ended_at?: string | null
+          id?: string
+          started_at?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          role: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          role: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      phone_numbers: {
+        Row: {
+          business_id: string
+          created_at: string
+          direction: string
+          id: string
+          label: string | null
+          phone_number: string
+          provider: string
+          provider_sid: string | null
+          status: string
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          direction?: string
+          id?: string
+          label?: string | null
+          phone_number: string
+          provider?: string
+          provider_sid?: string | null
+          status?: string
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          direction?: string
+          id?: string
+          label?: string | null
+          phone_number?: string
+          provider?: string
+          provider_sid?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "phone_numbers_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reservations: {
+        Row: {
+          business_id: string | null
+          conversation_id: string | null
+          created_at: string
+          date: string
+          email: string
+          guests: number
+          id: string
+          name: string
+          phone: string | null
+          status: string
+          time: string
+        }
+        Insert: {
+          business_id?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          date: string
+          email: string
+          guests?: number
+          id?: string
+          name: string
+          phone?: string | null
+          status?: string
+          time: string
+        }
+        Update: {
+          business_id?: string | null
+          conversation_id?: string | null
+          created_at?: string
+          date?: string
+          email?: string
+          guests?: number
+          id?: string
+          name?: string
+          phone?: string | null
+          status?: string
+          time?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reservations_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reservations_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +614,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const
