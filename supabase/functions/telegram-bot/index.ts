@@ -2,7 +2,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 Deno.serve(async (req) => {
@@ -15,6 +15,23 @@ Deno.serve(async (req) => {
     );
 
     const body = await req.json();
+
+    // ── Handle webhook setup ──
+    if (body.action === "set_webhook") {
+      const { user_id } = body;
+      const { data: config } = await supabase.from("telegram_config").select("*").eq("user_id", user_id).eq("is_active", true).single();
+      if (!config) return new Response(JSON.stringify({ error: "No active config" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      const botToken = Deno.env.get(config.bot_token_secret_name) || "";
+      if (!botToken) return new Response(JSON.stringify({ error: "Bot token secret not found" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      const webhookUrl = `${Deno.env.get("SUPABASE_URL")}/functions/v1/telegram-bot`;
+      const res = await fetch(`https://api.telegram.org/bot${botToken}/setWebhook`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: webhookUrl }),
+      });
+      const result = await res.json();
+      return new Response(JSON.stringify({ ok: true, webhook: result }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
 
     // ── Handle notification sending (called internally) ──
     if (body.action === "notify") {

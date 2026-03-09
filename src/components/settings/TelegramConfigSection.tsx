@@ -63,6 +63,17 @@ const TelegramConfigSection = () => {
     onError: () => toast({ title: "Error", variant: "destructive" }),
   });
 
+  const setWebhook = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.functions.invoke("telegram-bot", {
+        body: { action: "set_webhook", user_id: user!.id },
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => toast({ title: "Webhook registered! Bot is now listening for commands." }),
+    onError: () => toast({ title: "Failed to set webhook", variant: "destructive" }),
+  });
+
   const testConnection = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.functions.invoke("telegram-bot", {
@@ -125,6 +136,9 @@ const TelegramConfigSection = () => {
         <div className="flex gap-2">
           <Button className="flex-1" onClick={() => save.mutate()} disabled={save.isPending}>
             {save.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}Save Config
+          </Button>
+          <Button variant="outline" onClick={() => setWebhook.mutate()} disabled={setWebhook.isPending || !form.chat_id}>
+            {setWebhook.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Zap className="mr-2 h-4 w-4" />}Set Webhook
           </Button>
           <Button variant="outline" onClick={() => testConnection.mutate()} disabled={testConnection.isPending || !form.chat_id}>
             {testConnection.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}Test
