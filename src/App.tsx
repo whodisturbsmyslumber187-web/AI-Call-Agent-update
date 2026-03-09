@@ -19,6 +19,7 @@ import AgentHub from "./pages/AgentHub";
 import Approvals from "./pages/Approvals";
 import CommandCenter from "./pages/CommandCenter";
 import Auth from "./pages/Auth";
+import ActivityPage from "./pages/ActivityPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
