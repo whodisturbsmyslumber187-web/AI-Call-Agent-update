@@ -9,8 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Save, Loader2, Send, MessageCircle, Zap, Key, Bot } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Save, Loader2, Send, MessageCircle, Zap, Key, Bot } from "lucide-react";
 
 const TelegramConfigSection = () => {
   const { user } = useAuth();
@@ -29,9 +29,8 @@ const TelegramConfigSection = () => {
       bulk_job_completed: true,
     },
   });
-  const [showTokenInfo, setShowTokenInfo] = useState(false);
 
-  const { data: config, isLoading } = useQuery({
+  const { data: config } = useQuery({
     queryKey: ["telegram-config"],
     queryFn: async () => {
       const { data, error } = await supabase.from("telegram_config").select("*").eq("user_id", user!.id).maybeSingle();
@@ -84,9 +83,6 @@ const TelegramConfigSection = () => {
     },
     onError: () => toast({ title: "Error saving config", variant: "destructive" }),
   });
-
-
-
 
   const setWebhook = useMutation({
     mutationFn: async () => {
@@ -152,31 +148,12 @@ const TelegramConfigSection = () => {
 
         {/* Bot Token Management */}
         <div className="space-y-2 border border-border rounded-lg p-3">
-          <div className="flex items-center justify-between">
-            <Label className="flex items-center gap-2"><Key className="h-4 w-4 text-muted-foreground" />Bot Token</Label>
-            <Button variant="ghost" size="sm" onClick={() => setShowTokenField(!showTokenField)}>
-              {showTokenField ? "Cancel" : "Change Token"}
-            </Button>
-          </div>
+          <Label className="flex items-center gap-2"><Key className="h-4 w-4 text-muted-foreground" />Bot Token</Label>
           <p className="text-xs text-muted-foreground">
-            Secret name: <code className="bg-secondary px-1 rounded">{form.bot_token_secret_name}</code> — stored securely
+            Your bot token is stored securely as a secret. To change it, update the <code className="bg-secondary px-1 rounded">TELEGRAM_BOT_TOKEN</code> secret via the chat — just ask "update my Telegram bot token".
           </p>
-          {showTokenField && (
-            <div className="flex gap-2 mt-2">
-              <Input
-                type="password"
-                value={newToken}
-                onChange={e => setNewToken(e.target.value)}
-                placeholder="Paste new bot token from @BotFather"
-                className="bg-secondary border-border font-mono text-xs flex-1"
-              />
-              <Button size="sm" onClick={() => updateToken.mutate()} disabled={!newToken || updateToken.isPending}>
-                {updateToken.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Update"}
-              </Button>
-            </div>
-          )}
-          <div className="space-y-1 mt-2">
-            <Label className="text-xs text-muted-foreground">Secret Name Override</Label>
+          <div className="space-y-1">
+            <Label className="text-xs text-muted-foreground">Secret Name</Label>
             <Input value={form.bot_token_secret_name} onChange={e => setForm({ ...form, bot_token_secret_name: e.target.value })} className="bg-secondary border-border font-mono text-xs" placeholder="TELEGRAM_BOT_TOKEN" />
           </div>
         </div>
@@ -188,7 +165,7 @@ const TelegramConfigSection = () => {
           <p className="text-xs text-muted-foreground">Send /start to your bot, then use @userinfobot to find your chat ID</p>
         </div>
 
-        {/* Linked Agents/Businesses */}
+        {/* Linked Agents */}
         <div className="space-y-3 border-t border-border pt-4">
           <div className="flex items-center justify-between">
             <Label className="text-foreground font-medium flex items-center gap-2">
@@ -238,7 +215,7 @@ const TelegramConfigSection = () => {
           ))}
         </div>
 
-        {/* Commands Reference */}
+        {/* Commands */}
         <div className="border-t border-border pt-4 space-y-2">
           <Label className="text-foreground font-medium">Available Commands</Label>
           <div className="grid grid-cols-2 gap-1 text-xs font-mono text-muted-foreground">
