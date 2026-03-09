@@ -20,6 +20,7 @@ import Approvals from "./pages/Approvals";
 import CommandCenter from "./pages/CommandCenter";
 import Auth from "./pages/Auth";
 import ActivityPage from "./pages/ActivityPage";
+import HelpCenter from "./pages/HelpCenter";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -51,6 +52,7 @@ const App = () => (
                 <Route path="approvals" element={<Approvals />} />
                 <Route path="analytics" element={<Analytics />} />
                 <Route path="activity" element={<ActivityPage />} />
+                <Route path="help" element={<HelpCenter />} />
                 <Route path="settings" element={<Settings />} />
               </Route>
 

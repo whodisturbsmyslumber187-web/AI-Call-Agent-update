@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { Building2, Mic, MessageSquare, Calendar, Settings, LogOut, Activity, BarChart3, Users, ShieldCheck, LayoutDashboard, History, Search } from "lucide-react";
+import { Building2, Mic, MessageSquare, Calendar, Settings, LogOut, Activity, BarChart3, Users, ShieldCheck, LayoutDashboard, History, Search, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ const navItems = [
   { to: "/analytics", icon: BarChart3, label: "Analytics" },
   { to: "/approvals", icon: ShieldCheck, label: "Approvals", badge: true },
   { to: "/activity", icon: History, label: "Activity" },
+  { to: "/help", icon: HelpCircle, label: "Help & Docs" },
   { to: "/settings", icon: Settings, label: "Settings" },
 ];
 
