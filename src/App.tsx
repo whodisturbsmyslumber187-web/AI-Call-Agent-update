@@ -52,6 +52,7 @@ const App = () => (
                 <Route path="approvals" element={<Approvals />} />
                 <Route path="analytics" element={<Analytics />} />
                 <Route path="activity" element={<ActivityPage />} />
+                <Route path="help" element={<HelpCenter />} />
                 <Route path="settings" element={<Settings />} />
               </Route>
 
