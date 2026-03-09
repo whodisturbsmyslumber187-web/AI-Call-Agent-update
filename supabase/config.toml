@@ -41,3 +41,6 @@ verify_jwt = false
 
 [functions.dashboard-api]
 verify_jwt = false
+
+[functions.mcp-server]
+verify_jwt = false
