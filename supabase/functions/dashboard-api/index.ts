@@ -96,6 +96,43 @@ const API_DOCS = {
   },
 };
 
+// ── Field allowlists ──────────────────────────────────────────────
+const ALLOWED_BUSINESS_FIELDS = new Set([
+  "name", "industry", "instructions", "greeting_message", "voice",
+  "knowledge_base", "sales_script", "objection_handling", "closing_techniques",
+  "upsell_prompts", "agent_mode", "status", "timezone", "default_language",
+  "supported_languages", "greeting_audio_url", "hold_music_url",
+  "personality_friendliness", "personality_formality", "personality_urgency",
+  "personality_humor", "endpointing_threshold_ms", "barge_in_enabled",
+  "voicemail_detection_enabled", "ivr_enabled", "default_ivr_menu_id",
+  "livekit_enabled", "livekit_room_prefix",
+]);
+
+const ALLOWED_PROVIDER_FIELDS = new Set([
+  "llm_provider", "llm_model", "llm_api_endpoint", "llm_api_key_name",
+  "tts_provider", "tts_voice_id", "tts_api_endpoint", "tts_api_key_name",
+  "stt_provider", "stt_model",
+]);
+
+const ALLOWED_IVR_FIELDS = new Set([
+  "name", "template_type", "greeting_text", "greeting_audio_url",
+  "fallback_action", "fallback_target", "max_retries", "timeout_seconds", "is_active",
+]);
+
+function filterFields(updates: Record<string, unknown>, allowed: Set<string>): Record<string, unknown> {
+  return Object.fromEntries(Object.entries(updates).filter(([k]) => allowed.has(k)));
+}
+
+async function verifyBusinessOwnership(supabase: any, businessId: string, userId: string): Promise<boolean> {
+  const { data } = await supabase.from("businesses").select("id").eq("id", businessId).eq("user_id", userId).maybeSingle();
+  return !!data;
+}
+
+async function verifyJobOwnership(supabase: any, jobId: string, table: string, userId: string): Promise<boolean> {
+  const { data } = await supabase.from(table).select("business_id, businesses!inner(user_id)").eq("id", jobId).single();
+  return data && (data as any).businesses?.user_id === userId;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS")
     return new Response(null, { headers: corsHeaders });
