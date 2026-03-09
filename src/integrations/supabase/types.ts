@@ -130,6 +130,39 @@ export type Database = {
           },
         ]
       }
+      api_credentials: {
+        Row: {
+          created_at: string
+          credential_key: string
+          credential_value_encrypted: string
+          id: string
+          is_configured: boolean
+          name: string
+          provider: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          credential_key?: string
+          credential_value_encrypted?: string
+          id?: string
+          is_configured?: boolean
+          name?: string
+          provider?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          credential_key?: string
+          credential_value_encrypted?: string
+          id?: string
+          is_configured?: boolean
+          name?: string
+          provider?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       approval_requests: {
         Row: {
           approved_by: string | null
@@ -519,6 +552,51 @@ export type Database = {
           },
         ]
       }
+      call_summaries: {
+        Row: {
+          action_items: Json
+          business_id: string
+          call_log_id: string
+          created_at: string
+          id: string
+          key_topics: string[]
+          summary: string
+        }
+        Insert: {
+          action_items?: Json
+          business_id: string
+          call_log_id: string
+          created_at?: string
+          id?: string
+          key_topics?: string[]
+          summary?: string
+        }
+        Update: {
+          action_items?: Json
+          business_id?: string
+          call_log_id?: string
+          created_at?: string
+          id?: string
+          key_topics?: string[]
+          summary?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "call_summaries_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "call_summaries_call_log_id_fkey"
+            columns: ["call_log_id"]
+            isOneToOne: false
+            referencedRelation: "call_logs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaign_contacts: {
         Row: {
           call_status: string
@@ -688,6 +766,9 @@ export type Database = {
           email: string | null
           id: string
           last_contact_at: string | null
+          lead_intent: string
+          lead_score: number
+          lead_status: string
           name: string
           notes: string
           phone: string | null
@@ -702,6 +783,9 @@ export type Database = {
           email?: string | null
           id?: string
           last_contact_at?: string | null
+          lead_intent?: string
+          lead_score?: number
+          lead_status?: string
           name?: string
           notes?: string
           phone?: string | null
@@ -716,6 +800,9 @@ export type Database = {
           email?: string | null
           id?: string
           last_contact_at?: string | null
+          lead_intent?: string
+          lead_score?: number
+          lead_status?: string
           name?: string
           notes?: string
           phone?: string | null
@@ -949,6 +1036,33 @@ export type Database = {
           },
         ]
       }
+      platform_settings: {
+        Row: {
+          created_at: string
+          id: string
+          setting_key: string
+          setting_value: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          setting_key: string
+          setting_value?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          setting_key?: string
+          setting_value?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       reservations: {
         Row: {
           business_id: string | null
@@ -1002,6 +1116,124 @@ export type Database = {
             columns: ["conversation_id"]
             isOneToOne: false
             referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      revenue_entries: {
+        Row: {
+          amount: number
+          business_id: string
+          created_at: string
+          description: string
+          entry_date: string
+          id: string
+          source: string
+        }
+        Insert: {
+          amount?: number
+          business_id: string
+          created_at?: string
+          description?: string
+          entry_date?: string
+          id?: string
+          source?: string
+        }
+        Update: {
+          amount?: number
+          business_id?: string
+          created_at?: string
+          description?: string
+          entry_date?: string
+          id?: string
+          source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "revenue_entries_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sla_alerts: {
+        Row: {
+          acknowledged: boolean
+          alert_type: string
+          business_id: string
+          created_at: string
+          id: string
+          message: string
+          sla_rule_id: string
+        }
+        Insert: {
+          acknowledged?: boolean
+          alert_type?: string
+          business_id: string
+          created_at?: string
+          id?: string
+          message?: string
+          sla_rule_id: string
+        }
+        Update: {
+          acknowledged?: boolean
+          alert_type?: string
+          business_id?: string
+          created_at?: string
+          id?: string
+          message?: string
+          sla_rule_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sla_alerts_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sla_alerts_sla_rule_id_fkey"
+            columns: ["sla_rule_id"]
+            isOneToOne: false
+            referencedRelation: "sla_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sla_rules: {
+        Row: {
+          business_id: string
+          created_at: string
+          id: string
+          is_active: boolean
+          rule_type: string
+          threshold_value: number
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          rule_type?: string
+          threshold_value?: number
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          rule_type?: string
+          threshold_value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sla_rules_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
             referencedColumns: ["id"]
           },
         ]

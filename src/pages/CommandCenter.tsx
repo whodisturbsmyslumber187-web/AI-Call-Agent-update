@@ -2,11 +2,12 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Phone, PhoneIncoming, PhoneOff, Clock, Users, TrendingUp, Activity, BarChart3, Calendar } from "lucide-react";
+import { Phone, PhoneIncoming, PhoneOff, Clock, Users, TrendingUp, Activity, Calendar } from "lucide-react";
 import { useEffect, useState } from "react";
-import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-
-const COLORS = ["hsl(var(--primary))", "hsl(var(--accent))", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import LeaderboardWidget from "@/components/command-center/LeaderboardWidget";
+import RevenueWidget from "@/components/command-center/RevenueWidget";
+import SlaAlertsBanner from "@/components/command-center/SlaAlertsBanner";
 
 const CommandCenter = () => {
   const [now, setNow] = useState(new Date());
@@ -53,27 +54,11 @@ const CommandCenter = () => {
     refetchInterval: 5000,
   });
 
-  const { data: approvals } = useQuery({
-    queryKey: ["cmd-approvals"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("approval_requests")
-        .select("id")
-        .eq("status", "pending");
-      if (error) throw error;
-      return data;
-    },
-    refetchInterval: 10000,
-  });
-
   const { data: reservations } = useQuery({
     queryKey: ["cmd-reservations-today"],
     queryFn: async () => {
       const today = new Date().toISOString().split("T")[0];
-      const { data, error } = await supabase
-        .from("reservations")
-        .select("id")
-        .eq("date", today);
+      const { data, error } = await supabase.from("reservations").select("id").eq("date", today);
       if (error) throw error;
       return data;
     },
@@ -91,7 +76,6 @@ const CommandCenter = () => {
     },
   });
 
-  // Computed metrics
   const todayCalls = callLogs?.filter(c => new Date(c.started_at).toDateString() === now.toDateString()) || [];
   const activeCalls = callLogs?.filter(c => !c.ended_at) || [];
   const avgDuration = todayCalls.length > 0
@@ -108,7 +92,6 @@ const CommandCenter = () => {
     ? (scores.reduce((s, c) => s + c.customer_satisfaction, 0) / scores.length).toFixed(1)
     : "N/A";
 
-  // Hourly call volume
   const hourlyData = Array.from({ length: 24 }, (_, i) => ({
     hour: `${i}:00`,
     calls: todayCalls.filter(c => new Date(c.started_at).getHours() === i).length,
@@ -125,7 +108,10 @@ const CommandCenter = () => {
         </div>
       </div>
 
-      {/* Global Metrics Bar */}
+      {/* SLA Alerts Banner */}
+      <SlaAlertsBanner />
+
+      {/* Global Metrics */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
         <MetricCard icon={Phone} label="Active Calls" value={activeCalls.length} color="text-green-500" />
         <MetricCard icon={PhoneIncoming} label="Today's Calls" value={todayCalls.length} color="text-primary" />
@@ -169,7 +155,7 @@ const CommandCenter = () => {
               <p className="text-sm text-muted-foreground text-center py-4">Queue empty</p>
             ) : (
               <div className="space-y-2">
-                {queue.map((q, i) => (
+                {queue.map((q) => (
                   <div key={q.id} className="flex items-center justify-between text-sm border-b border-border/50 pb-1">
                     <span>#{q.position} {q.caller_name || q.caller_number || "Unknown"}</span>
                     <span className="text-xs text-muted-foreground">{q.estimated_wait ? `~${q.estimated_wait}s` : "—"}</span>
@@ -182,7 +168,6 @@ const CommandCenter = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Hourly Call Volume */}
         <Card className="bg-card border-border">
           <CardHeader className="pb-2"><CardTitle className="text-sm">Call Volume (Today)</CardTitle></CardHeader>
           <CardContent>
@@ -197,7 +182,6 @@ const CommandCenter = () => {
           </CardContent>
         </Card>
 
-        {/* Sentiment Gauge */}
         <Card className="bg-card border-border">
           <CardHeader className="pb-2"><CardTitle className="text-sm">Sentiment Distribution</CardTitle></CardHeader>
           <CardContent className="flex items-center justify-center">
@@ -207,7 +191,7 @@ const CommandCenter = () => {
               <ResponsiveContainer width="100%" height={200}>
                 <PieChart>
                   <Pie data={sentimentData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={70} label={({ name, value }) => `${name}: ${value}`}>
-                    {sentimentData.map((_, i) => <Cell key={i} fill={["#10b981", "#94a3b8", "#ef4444"][i]} />)}
+                    {sentimentData.map((_, i) => <Cell key={i} fill={["hsl(var(--primary))", "hsl(var(--muted-foreground))", "hsl(var(--destructive))"][i]} />)}
                   </Pie>
                   <Tooltip />
                 </PieChart>
@@ -215,6 +199,12 @@ const CommandCenter = () => {
             )}
           </CardContent>
         </Card>
+      </div>
+
+      {/* Leaderboard + Revenue */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <LeaderboardWidget />
+        <RevenueWidget />
       </div>
 
       {/* Activity Feed */}
