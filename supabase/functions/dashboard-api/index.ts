@@ -306,16 +306,22 @@ Deno.serve(async (req) => {
       case "update_ivr_menu": {
         const menuId = body.menu_id as string;
         if (!menuId) return err("menu_id required");
+        // Verify ownership via ivr_menus -> businesses
+        const { data: menuCheck } = await supabase.from("ivr_menus").select("business_id, businesses!inner(user_id)").eq("id", menuId).single();
+        if (!menuCheck || (menuCheck as any).businesses?.user_id !== apiKey.user_id) return err("Unauthorized", 403);
         const updates = body.updates as Record<string, unknown>;
         if (updates) {
-          await supabase.from("ivr_menus").update(updates).eq("id", menuId);
+          const safeUpdates = filterFields(updates, ALLOWED_IVR_FIELDS);
+          if (Object.keys(safeUpdates).length > 0) {
+            await supabase.from("ivr_menus").update(safeUpdates).eq("id", menuId);
+          }
         }
         const opts = body.options as Array<Record<string, unknown>>;
         if (opts) {
           await supabase.from("ivr_options").delete().eq("ivr_menu_id", menuId);
           const rows = opts.map((o) => ({
             ivr_menu_id: menuId,
-            business_id: o.business_id as string,
+            business_id: menuCheck.business_id,
             digit: o.digit as string,
             label: o.label as string,
             action: (o.action as string) || "ai_agent",
