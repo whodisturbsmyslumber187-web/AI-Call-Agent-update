@@ -496,6 +496,7 @@ Deno.serve(async (req) => {
         const kind = body.job_kind as string;
         if (!jobId || !kind) return err("job_id and job_kind required");
         const table = kind === "marketing" ? "bulk_marketing_jobs" : "bulk_call_jobs";
+        if (!(await verifyJobOwnership(supabase, jobId, table, apiKey.user_id))) return err("Unauthorized", 403);
         const { data } = await supabase.from(table).select("*").eq("id", jobId).single();
         return ok(data);
       }
@@ -504,6 +505,7 @@ Deno.serve(async (req) => {
         const kind = body.job_kind as string;
         if (!jobId || !kind) return err("job_id and job_kind required");
         const table = kind === "marketing" ? "bulk_marketing_jobs" : "bulk_call_jobs";
+        if (!(await verifyJobOwnership(supabase, jobId, table, apiKey.user_id))) return err("Unauthorized", 403);
         await supabase.from(table).update({ status: "paused" }).eq("id", jobId);
         return ok({ paused: true });
       }
@@ -512,6 +514,7 @@ Deno.serve(async (req) => {
         const kind = body.job_kind as string;
         if (!jobId || !kind) return err("job_id and job_kind required");
         const table = kind === "marketing" ? "bulk_marketing_jobs" : "bulk_call_jobs";
+        if (!(await verifyJobOwnership(supabase, jobId, table, apiKey.user_id))) return err("Unauthorized", 403);
         await supabase.from(table).update({ status: "cancelled" }).eq("id", jobId);
         return ok({ cancelled: true });
       }
