@@ -939,6 +939,65 @@ const HelpCenter = () => {
       <Card className="border-border">
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2 text-foreground">
+            <Badge variant="outline">MCP</Badge>
+            MCP Server (Model Context Protocol)
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4 text-sm text-muted-foreground">
+          <p className="text-foreground font-medium">Connect any LLM or AI agent to your platform via the MCP Streamable HTTP protocol.</p>
+          
+          <div className="space-y-2">
+            <p className="font-semibold text-foreground">Endpoint URL:</p>
+            <code className="block bg-muted px-3 py-2 rounded font-mono text-xs text-foreground break-all">
+              https://mgbdgjwbzbkgwnaukbee.supabase.co/functions/v1/mcp-server
+            </code>
+          </div>
+
+          <div className="space-y-2">
+            <p className="font-semibold text-foreground">Authentication:</p>
+            <p>Every MCP tool requires an <code className="bg-muted px-1 rounded">api_key</code> parameter. Create one in <strong>Settings → API Keys</strong>.</p>
+          </div>
+
+          <div className="space-y-2">
+            <p className="font-semibold text-foreground">Claude Desktop Config:</p>
+            <pre className="bg-muted px-3 py-2 rounded font-mono text-xs overflow-x-auto">{`{
+  "mcpServers": {
+    "agenthub": {
+      "url": "https://mgbdgjwbzbkgwnaukbee.supabase.co/functions/v1/mcp-server"
+    }
+  }
+}`}</pre>
+          </div>
+
+          <div className="space-y-2">
+            <p className="font-semibold text-foreground">MCP Inspector (Testing):</p>
+            <code className="block bg-muted px-3 py-2 rounded font-mono text-xs text-foreground">
+              npx @modelcontextprotocol/inspector
+            </code>
+            <p>Enter the endpoint URL above and call any tool with your API key to test.</p>
+          </div>
+
+          <div className="space-y-2">
+            <p className="font-semibold text-foreground">Available Tools: 55+</p>
+            <p>The MCP server exposes every Dashboard API action as an MCP tool. Each tool accepts the same parameters as the REST API plus an <code className="bg-muted px-1 rounded">api_key</code> field. Complex parameters (objects, arrays) are passed as JSON strings.</p>
+          </div>
+
+          <div className="space-y-2">
+            <p className="font-semibold text-foreground">Supported Clients:</p>
+            <ul className="list-disc list-inside space-y-1">
+              <li>Claude Desktop / Claude Code</li>
+              <li>OpenClaw (Telegram bot agent)</li>
+              <li>Any MCP-compatible LLM client</li>
+              <li>Custom agents using MCP Streamable HTTP</li>
+              <li>MCP Inspector (for testing)</li>
+            </ul>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="border-border">
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2 text-foreground">
             <Badge variant="outline">Telegram</Badge>
             All Bot Commands (45+)
           </CardTitle>
