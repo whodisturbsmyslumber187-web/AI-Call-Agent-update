@@ -32,7 +32,7 @@ async function hashKey(raw: string): Promise<string> {
 // ── Help / self-discovery ──────────────────────────────────────────
 const API_DOCS = {
   name: "AgentHub Dashboard Control API",
-  version: "1.0.0",
+  version: "2.0.0",
   auth: "Bearer <api_key> header. Create keys in Settings → API Keys.",
   actions: {
     // Businesses
@@ -40,8 +40,10 @@ const API_DOCS = {
     get_business: { params: { business_id: "uuid" }, description: "Get a single business." },
     create_business: { params: { name: "string", industry: "string (optional)", instructions: "string (optional)" }, description: "Create a new business." },
     update_business: { params: { business_id: "uuid", updates: "object" }, description: "Update business fields." },
+    delete_business: { params: { business_id: "uuid" }, description: "Delete a business and all related data." },
     // Phone / IVR
     list_phone_numbers: { params: { business_id: "uuid" }, description: "List phone numbers for a business." },
+    create_phone_number: { params: { business_id: "uuid", phone_number: "string", provider: "string (optional)", direction: "inbound|outbound|both (optional)", label: "string (optional)" }, description: "Register a new phone number." },
     create_ivr_menu: { params: { business_id: "uuid", name: "string", template_type: "string", greeting_text: "string", options: "array" }, description: "Create an IVR menu with options." },
     update_ivr_menu: { params: { menu_id: "uuid", updates: "object", options: "array (optional)" }, description: "Update IVR menu and its options." },
     assign_number: { params: { phone_number_id: "uuid", handler_type: "ai_agent|human|ivr_menu", forward_to_phone: "string (optional)", ivr_menu_id: "uuid (optional)", mask_caller_id: "bool", record_calls: "bool" }, description: "Assign a phone number to a handler." },
@@ -65,6 +67,27 @@ const API_DOCS = {
     get_agent_config: { params: { business_id: "uuid" }, description: "Get agent instructions & persona settings." },
     update_agent_config: { params: { business_id: "uuid", updates: "object (instructions, greeting_message, personality_*, voice, etc.)" }, description: "Update agent configuration." },
     update_providers: { params: { business_id: "uuid", updates: "object (llm_provider, llm_model, tts_provider, stt_provider, etc.)" }, description: "Update LLM/TTS/STT provider settings." },
+    // Routing
+    list_routing_rules: { params: { business_id: "uuid" }, description: "List call routing rules." },
+    create_routing_rule: { params: { business_id: "uuid", condition_type: "time|caller_id|language|skill", condition_value: "string", action: "agent|forward|queue|voicemail", target: "string", priority: "number (optional)" }, description: "Create a call routing rule." },
+    // DNC
+    manage_dnc: { params: { business_id: "uuid", operation: "add|remove|list", phone_number: "string (for add/remove)", reason: "string (optional, for add)" }, description: "Manage Do Not Call list." },
+    // Knowledge Base
+    list_knowledge_base: { params: { business_id: "uuid" }, description: "List knowledge base items." },
+    update_knowledge_base: { params: { business_id: "uuid", title: "string", content: "string" }, description: "Add/update a knowledge base item." },
+    // SLA
+    list_sla_alerts: { params: { business_id: "uuid (optional)", acknowledged: "bool (optional)" }, description: "List SLA violations/alerts." },
+    create_sla_rule: { params: { business_id: "uuid", metric: "string", threshold: "number", action: "string" }, description: "Create an SLA monitoring rule." },
+    // Webhooks
+    list_webhooks: { params: { business_id: "uuid" }, description: "List registered webhook endpoints." },
+    create_webhook: { params: { business_id: "uuid", url: "string", events: "array of strings", is_active: "bool (optional)" }, description: "Register a webhook endpoint." },
+    // Experiments
+    list_experiments: { params: { business_id: "uuid" }, description: "List A/B test experiments." },
+    create_experiment: { params: { business_id: "uuid", name: "string", variant_a_instructions: "string", variant_b_instructions: "string", traffic_split: "number (optional)" }, description: "Start an A/B test experiment." },
+    // Customer Profiles
+    list_customer_profiles: { params: { business_id: "uuid", min_lead_score: "number (optional)", limit: "number (optional)" }, description: "List customer profiles with lead scores." },
+    // Voicemail
+    manage_voicemail: { params: { business_id: "uuid", operation: "get_settings|list_messages" }, description: "Get voicemail config or messages." },
     // Monitoring
     get_dashboard_stats: { params: { business_id: "uuid (optional)" }, description: "Get active calls, queue size, SLA status." },
     get_analytics: { params: { business_id: "uuid", days: "number (optional, default 7)" }, description: "Get call volume, outcomes, revenue metrics." },
@@ -172,6 +195,16 @@ Deno.serve(async (req) => {
         if (error) return err(error.message);
         return ok(data);
       }
+      case "delete_business": {
+        if (!bid) return err("business_id required");
+        const { error } = await supabase
+          .from("businesses")
+          .delete()
+          .eq("id", bid)
+          .eq("user_id", apiKey.user_id);
+        if (error) return err(error.message);
+        return ok({ deleted: true });
+      }
 
       // ── Phone Numbers ─────────────────────────────────────────
       case "list_phone_numbers": {
@@ -181,6 +214,22 @@ Deno.serve(async (req) => {
           .select("*")
           .eq("business_id", bid)
           .order("created_at", { ascending: false });
+        return ok(data);
+      }
+      case "create_phone_number": {
+        if (!bid) return err("business_id required");
+        const { data, error } = await supabase
+          .from("phone_numbers")
+          .insert({
+            business_id: bid,
+            phone_number: body.phone_number as string,
+            provider: (body.provider as string) || "twilio",
+            direction: (body.direction as string) || "both",
+            label: (body.label as string) || null,
+          })
+          .select()
+          .single();
+        if (error) return err(error.message);
         return ok(data);
       }
 
@@ -343,7 +392,6 @@ Deno.serve(async (req) => {
           .select()
           .single();
         if (jobErr) return err(jobErr.message);
-        // Fetch contact details
         const { data: contacts } = await supabase
           .from("contacts")
           .select("id,name,phone")
@@ -491,6 +539,213 @@ Deno.serve(async (req) => {
         return ok(data);
       }
 
+      // ── Routing Rules ─────────────────────────────────────────
+      case "list_routing_rules": {
+        if (!bid) return err("business_id required");
+        const { data } = await supabase
+          .from("call_routing_rules")
+          .select("*")
+          .eq("business_id", bid)
+          .order("priority", { ascending: true });
+        return ok(data);
+      }
+      case "create_routing_rule": {
+        if (!bid) return err("business_id required");
+        const { data, error } = await supabase
+          .from("call_routing_rules")
+          .insert({
+            business_id: bid,
+            condition_type: (body.condition_type as string) || "time",
+            condition_value: (body.condition_value as string) || "",
+            action: (body.action_type as string) || "agent",
+            target: (body.target as string) || "",
+            priority: (body.priority as number) || 0,
+          })
+          .select()
+          .single();
+        if (error) return err(error.message);
+        return ok(data);
+      }
+
+      // ── DNC ───────────────────────────────────────────────────
+      case "manage_dnc": {
+        if (!bid) return err("business_id required");
+        const op = body.operation as string;
+        if (op === "list") {
+          const { data } = await supabase
+            .from("dnc_list")
+            .select("*")
+            .eq("business_id", bid)
+            .order("added_at", { ascending: false })
+            .limit(500);
+          return ok(data);
+        }
+        if (op === "add") {
+          const phone = body.phone_number as string;
+          if (!phone) return err("phone_number required");
+          const { data, error } = await supabase
+            .from("dnc_list")
+            .insert({ business_id: bid, phone_number: phone, reason: (body.reason as string) || "" })
+            .select()
+            .single();
+          if (error) return err(error.message);
+          return ok(data);
+        }
+        if (op === "remove") {
+          const phone = body.phone_number as string;
+          if (!phone) return err("phone_number required");
+          await supabase.from("dnc_list").delete().eq("business_id", bid).eq("phone_number", phone);
+          return ok({ removed: true });
+        }
+        return err("operation must be add, remove, or list");
+      }
+
+      // ── Knowledge Base ────────────────────────────────────────
+      case "list_knowledge_base": {
+        if (!bid) return err("business_id required");
+        const { data } = await supabase
+          .from("knowledge_base_items")
+          .select("*")
+          .eq("business_id", bid)
+          .order("created_at", { ascending: false });
+        return ok(data);
+      }
+      case "update_knowledge_base": {
+        if (!bid) return err("business_id required");
+        const title = body.title as string;
+        const content = body.content as string;
+        if (!title || !content) return err("title and content required");
+        const { data, error } = await supabase
+          .from("knowledge_base_items")
+          .insert({ business_id: bid, title, content })
+          .select()
+          .single();
+        if (error) return err(error.message);
+        return ok(data);
+      }
+
+      // ── SLA ───────────────────────────────────────────────────
+      case "list_sla_alerts": {
+        let q = supabase
+          .from("sla_alerts")
+          .select("*, businesses(name)")
+          .order("created_at", { ascending: false })
+          .limit(50);
+        if (bid) q = q.eq("business_id", bid);
+        if (body.acknowledged !== undefined) q = q.eq("acknowledged", body.acknowledged as boolean);
+        const { data } = await q;
+        return ok(data);
+      }
+      case "create_sla_rule": {
+        if (!bid) return err("business_id required");
+        const { data, error } = await supabase
+          .from("sla_rules")
+          .insert({
+            business_id: bid,
+            metric: (body.metric as string) || "response_time",
+            threshold: (body.threshold as number) || 30,
+            action: (body.sla_action as string) || "alert",
+          })
+          .select()
+          .single();
+        if (error) return err(error.message);
+        return ok(data);
+      }
+
+      // ── Webhooks ──────────────────────────────────────────────
+      case "list_webhooks": {
+        if (!bid) return err("business_id required");
+        const { data } = await supabase
+          .from("webhooks")
+          .select("*")
+          .eq("business_id", bid)
+          .order("created_at", { ascending: false });
+        return ok(data);
+      }
+      case "create_webhook": {
+        if (!bid) return err("business_id required");
+        const { data, error } = await supabase
+          .from("webhooks")
+          .insert({
+            business_id: bid,
+            url: body.url as string,
+            events: body.events as string[],
+            is_active: body.is_active !== false,
+          })
+          .select()
+          .single();
+        if (error) return err(error.message);
+        return ok(data);
+      }
+
+      // ── Experiments ───────────────────────────────────────────
+      case "list_experiments": {
+        if (!bid) return err("business_id required");
+        const { data } = await supabase
+          .from("ab_tests")
+          .select("*")
+          .eq("business_id", bid)
+          .order("created_at", { ascending: false });
+        return ok(data);
+      }
+      case "create_experiment": {
+        if (!bid) return err("business_id required");
+        const { data, error } = await supabase
+          .from("ab_tests")
+          .insert({
+            business_id: bid,
+            name: (body.name as string) || "API Experiment",
+            variant_a_instructions: (body.variant_a_instructions as string) || "",
+            variant_b_instructions: (body.variant_b_instructions as string) || "",
+            traffic_split: (body.traffic_split as number) || 50,
+            status: "running",
+            started_at: new Date().toISOString(),
+          })
+          .select()
+          .single();
+        if (error) return err(error.message);
+        return ok(data);
+      }
+
+      // ── Customer Profiles ─────────────────────────────────────
+      case "list_customer_profiles": {
+        if (!bid) return err("business_id required");
+        let q = supabase
+          .from("customer_profiles")
+          .select("*")
+          .eq("business_id", bid)
+          .order("lead_score", { ascending: false })
+          .limit((body.limit as number) || 50);
+        if (body.min_lead_score) q = q.gte("lead_score", body.min_lead_score as number);
+        const { data } = await q;
+        return ok(data);
+      }
+
+      // ── Voicemail ─────────────────────────────────────────────
+      case "manage_voicemail": {
+        if (!bid) return err("business_id required");
+        const op = (body.operation as string) || "get_settings";
+        if (op === "get_settings") {
+          const { data } = await supabase
+            .from("businesses")
+            .select("id,name,voicemail_detection_enabled,greeting_message,greeting_audio_url")
+            .eq("id", bid)
+            .single();
+          return ok(data);
+        }
+        if (op === "list_messages") {
+          const { data } = await supabase
+            .from("call_logs")
+            .select("id,caller_name,caller_number,recording_url,transcript,started_at,duration_seconds")
+            .eq("business_id", bid)
+            .eq("outcome", "voicemail")
+            .order("started_at", { ascending: false })
+            .limit(50);
+          return ok(data);
+        }
+        return err("operation must be get_settings or list_messages");
+      }
+
       // ── Monitoring ────────────────────────────────────────────
       case "get_dashboard_stats": {
         let queueQ = supabase.from("call_queue").select("id", { count: "exact", head: true }).eq("status", "waiting");
@@ -537,7 +792,7 @@ Deno.serve(async (req) => {
       }
 
       default:
-        return err(`Unknown action: ${action}. Use action 'help' to see available actions.`);
+        return err(`Unknown action: ${action}. Use action 'help' to see all ${Object.keys(API_DOCS.actions).length} available actions.`);
     }
   } catch (e) {
     return err(e.message || "Internal error", 500);
