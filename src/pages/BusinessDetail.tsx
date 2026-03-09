@@ -121,6 +121,7 @@ const BusinessDetail = () => {
         <TabsContent value="voicemail" className="mt-6"><VoicemailTab businessId={business.id} /></TabsContent>
         <TabsContent value="templates" className="mt-6"><MessageTemplatesTab businessId={business.id} /></TabsContent>
         <TabsContent value="webhooks" className="mt-6"><WebhooksTab businessId={business.id} /></TabsContent>
+        <TabsContent value="experiments" className="mt-6"><ExperimentsTab businessId={business.id} /></TabsContent>
         {business.livekit_enabled && (
           <TabsContent value="livekit" className="mt-6">
             <LiveKitCallTab businessId={business.id} businessName={business.name} />

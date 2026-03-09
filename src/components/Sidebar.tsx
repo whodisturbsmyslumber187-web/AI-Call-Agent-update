@@ -17,6 +17,7 @@ const navItems = [
   { to: "/monitoring", icon: Activity, label: "Live Monitor" },
   { to: "/analytics", icon: BarChart3, label: "Analytics" },
   { to: "/approvals", icon: ShieldCheck, label: "Approvals", badge: true },
+  { to: "/activity", icon: History, label: "Activity" },
   { to: "/settings", icon: Settings, label: "Settings" },
 ];
 
