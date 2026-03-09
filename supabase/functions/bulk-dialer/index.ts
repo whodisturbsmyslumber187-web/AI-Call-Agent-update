@@ -9,6 +9,18 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
+    // ── Auth check ──
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const anonClient = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, { global: { headers: { Authorization: authHeader } } });
+    const { data: claimsData, error: claimsErr } = await anonClient.auth.getClaims(authHeader.replace("Bearer ", ""));
+    if (claimsErr || !claimsData?.claims) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const userId = claimsData.claims.sub as string;
+
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
@@ -16,15 +28,20 @@ Deno.serve(async (req) => {
 
     const { action, job_id } = await req.json();
 
+    // Verify job ownership
+    if (job_id) {
+      const { data: job } = await supabase.from("bulk_call_jobs").select("business_id, businesses!inner(user_id)").eq("id", job_id).single();
+      if (!job || (job as any).businesses?.user_id !== userId) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+    }
+
     if (action === "start") {
-      // Update job status to running
       await supabase.from("bulk_call_jobs").update({ status: "running", started_at: new Date().toISOString() }).eq("id", job_id);
 
-      // Get job config
       const { data: job } = await supabase.from("bulk_call_jobs").select("*").eq("id", job_id).single();
       if (!job) throw new Error("Job not found");
 
-      // Get pending entries
       const { data: entries } = await supabase
         .from("bulk_call_entries")
         .select("*")
@@ -37,14 +54,12 @@ Deno.serve(async (req) => {
         return new Response(JSON.stringify({ message: "No pending entries, job completed" }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
-      // Mark entries as dialing
       const entryIds = entries.map(e => e.id);
       await supabase.from("bulk_call_entries").update({ status: "dialing", last_attempt_at: new Date().toISOString() }).in("id", entryIds);
       await supabase.from("bulk_call_jobs").update({ in_progress: entryIds.length }).eq("id", job_id);
 
-      // Simulate processing (in production, this would trigger actual calls via Twilio/LiveKit)
       for (const entry of entries) {
-        const isSuccess = Math.random() > 0.3; // Simulated success rate
+        const isSuccess = Math.random() > 0.3;
         const duration = isSuccess ? Math.floor(Math.random() * 180) + 30 : 0;
         
         await supabase.from("bulk_call_entries").update({
@@ -55,7 +70,6 @@ Deno.serve(async (req) => {
         }).eq("id", entry.id);
       }
 
-      // Update job counters
       const { count: completedCount } = await supabase.from("bulk_call_entries").select("*", { count: "exact", head: true }).eq("job_id", job_id).eq("status", "completed");
       const { count: failedCount } = await supabase.from("bulk_call_entries").select("*", { count: "exact", head: true }).eq("job_id", job_id).eq("status", "failed");
       const { count: pendingCount } = await supabase.from("bulk_call_entries").select("*", { count: "exact", head: true }).eq("job_id", job_id).eq("status", "pending");
@@ -92,6 +106,6 @@ Deno.serve(async (req) => {
 
     return new Response(JSON.stringify({ error: "Unknown action" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ error: "Internal error" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });
