@@ -545,6 +545,9 @@ Deno.serve(async (req) => {
       case "get_call_transcript": {
         const clId = body.call_log_id as string;
         if (!clId) return err("call_log_id required");
+        // Verify ownership via call_logs -> businesses
+        const { data: clCheck } = await supabase.from("call_logs").select("business_id, businesses!inner(user_id)").eq("id", clId).single();
+        if (!clCheck || (clCheck as any).businesses?.user_id !== apiKey.user_id) return err("Unauthorized", 403);
         const { data } = await supabase
           .from("call_logs")
           .select("id,transcript,caller_name,caller_number,started_at,duration_seconds")
