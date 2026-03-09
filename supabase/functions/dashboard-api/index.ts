@@ -337,6 +337,9 @@ Deno.serve(async (req) => {
       case "assign_number": {
         const pnId = body.phone_number_id as string;
         if (!pnId) return err("phone_number_id required");
+        // Verify ownership
+        const { data: pnCheck } = await supabase.from("phone_numbers").select("business_id, businesses!inner(user_id)").eq("id", pnId).single();
+        if (!pnCheck || (pnCheck as any).businesses?.user_id !== apiKey.user_id) return err("Unauthorized", 403);
         const { data, error } = await supabase
           .from("phone_numbers")
           .update({
