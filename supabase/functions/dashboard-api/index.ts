@@ -32,7 +32,7 @@ async function hashKey(raw: string): Promise<string> {
 // ── Help / self-discovery ──────────────────────────────────────────
 const API_DOCS = {
   name: "AgentHub Dashboard Control API",
-  version: "2.0.0",
+  version: "3.0.0",
   auth: "Bearer <api_key> header. Create keys in Settings → API Keys.",
   actions: {
     // Businesses
@@ -70,17 +70,20 @@ const API_DOCS = {
     // Routing
     list_routing_rules: { params: { business_id: "uuid" }, description: "List call routing rules." },
     create_routing_rule: { params: { business_id: "uuid", condition_type: "time|caller_id|language|skill", condition_value: "string", action: "agent|forward|queue|voicemail", target: "string", priority: "number (optional)" }, description: "Create a call routing rule." },
+    delete_routing_rule: { params: { rule_id: "uuid" }, description: "Delete a routing rule." },
     // DNC
     manage_dnc: { params: { business_id: "uuid", operation: "add|remove|list", phone_number: "string (for add/remove)", reason: "string (optional, for add)" }, description: "Manage Do Not Call list." },
     // Knowledge Base
     list_knowledge_base: { params: { business_id: "uuid" }, description: "List knowledge base items." },
-    update_knowledge_base: { params: { business_id: "uuid", title: "string", content: "string" }, description: "Add/update a knowledge base item." },
+    create_knowledge_base_item: { params: { business_id: "uuid", title: "string", content: "string" }, description: "Add a knowledge base item." },
+    delete_knowledge_base_item: { params: { item_id: "uuid" }, description: "Delete a knowledge base item." },
     // SLA
     list_sla_alerts: { params: { business_id: "uuid (optional)", acknowledged: "bool (optional)" }, description: "List SLA violations/alerts." },
     create_sla_rule: { params: { business_id: "uuid", metric: "string", threshold: "number", action: "string" }, description: "Create an SLA monitoring rule." },
     // Webhooks
     list_webhooks: { params: { business_id: "uuid" }, description: "List registered webhook endpoints." },
     create_webhook: { params: { business_id: "uuid", url: "string", events: "array of strings", is_active: "bool (optional)" }, description: "Register a webhook endpoint." },
+    delete_webhook: { params: { webhook_id: "uuid" }, description: "Delete a webhook." },
     // Experiments
     list_experiments: { params: { business_id: "uuid" }, description: "List A/B test experiments." },
     create_experiment: { params: { business_id: "uuid", name: "string", variant_a_instructions: "string", variant_b_instructions: "string", traffic_split: "number (optional)" }, description: "Start an A/B test experiment." },
@@ -91,6 +94,43 @@ const API_DOCS = {
     // Monitoring
     get_dashboard_stats: { params: { business_id: "uuid (optional)" }, description: "Get active calls, queue size, SLA status." },
     get_analytics: { params: { business_id: "uuid", days: "number (optional, default 7)" }, description: "Get call volume, outcomes, revenue metrics." },
+
+    // ── NEW: Agent Learnings ──
+    list_learnings: { params: { business_id: "uuid", status: "pending|approved|rejected (optional)" }, description: "List agent learnings/memory items." },
+    create_learning: { params: { business_id: "uuid", trigger_phrase: "string", learned_response: "string", category: "faq|objection|upsell|policy (optional)" }, description: "Create a new agent learning." },
+    update_learning_status: { params: { learning_id: "uuid", status: "approved|rejected" }, description: "Approve or reject an agent learning." },
+    // ── NEW: Call Scores ──
+    list_call_scores: { params: { business_id: "uuid", limit: "number (optional)" }, description: "List call quality scores." },
+    // ── NEW: Call Transfers ──
+    list_call_transfers: { params: { business_id: "uuid", limit: "number (optional)" }, description: "List call transfer history." },
+    // ── NEW: Call Dispositions ──
+    list_dispositions: { params: { business_id: "uuid", limit: "number (optional)" }, description: "List call dispositions." },
+    create_disposition: { params: { call_log_id: "uuid", business_id: "uuid", disposition: "string", notes: "string (optional)" }, description: "Tag a call with a disposition." },
+    // ── NEW: Message Templates ──
+    list_templates: { params: { business_id: "uuid" }, description: "List message templates." },
+    create_template: { params: { business_id: "uuid", trigger_event: "string", template_text: "string", channel: "sms|email|whatsapp (optional)" }, description: "Create a message template." },
+    update_template: { params: { template_id: "uuid", updates: "object" }, description: "Update a message template." },
+    delete_template: { params: { template_id: "uuid" }, description: "Delete a message template." },
+    // ── NEW: Contact Segments ──
+    list_segments: { params: { business_id: "uuid" }, description: "List contact segments." },
+    create_segment: { params: { business_id: "uuid", name: "string", filter_criteria: "object" }, description: "Create a contact segment." },
+    delete_segment: { params: { segment_id: "uuid" }, description: "Delete a contact segment." },
+    // ── NEW: Availability/Calendar ──
+    get_availability: { params: { business_id: "uuid" }, description: "Get availability slots for a business." },
+    set_availability: { params: { business_id: "uuid", slots: "array of {day_of_week, start_time, end_time, is_available}" }, description: "Set availability slots (replaces existing)." },
+    // ── NEW: Inbound Capacity ──
+    get_inbound_capacity: { params: { business_id: "uuid" }, description: "Get inbound capacity config." },
+    update_inbound_capacity: { params: { business_id: "uuid", max_concurrent_calls: "number (optional)", overflow_action: "queue|voicemail|forward (optional)", overflow_target: "string (optional)", auto_scale: "bool (optional)" }, description: "Update inbound capacity settings." },
+    // ── NEW: Approvals ──
+    list_approvals: { params: { business_id: "uuid (optional)", status: "pending|approved|rejected (optional)" }, description: "List approval requests." },
+    approve_request: { params: { request_id: "uuid" }, description: "Approve a pending request." },
+    reject_request: { params: { request_id: "uuid" }, description: "Reject a pending request." },
+    // ── NEW: Competitor Mentions ──
+    list_competitor_mentions: { params: { business_id: "uuid", limit: "number (optional)" }, description: "List competitor mentions detected in calls." },
+    // ── NEW: Call Queue ──
+    list_queue: { params: { business_id: "uuid" }, description: "List callers currently in queue." },
+    clear_queue: { params: { business_id: "uuid" }, description: "Clear the call queue for a business." },
+
     // Meta
     help: { params: {}, description: "Returns this documentation." },
   },
@@ -117,6 +157,33 @@ const ALLOWED_PROVIDER_FIELDS = new Set([
 const ALLOWED_IVR_FIELDS = new Set([
   "name", "template_type", "greeting_text", "greeting_audio_url",
   "fallback_action", "fallback_target", "max_retries", "timeout_seconds", "is_active",
+]);
+
+const ALLOWED_TEMPLATE_FIELDS = new Set([
+  "trigger_event", "template_text", "channel", "is_active",
+]);
+
+// Write actions that require write permission
+const WRITE_ACTIONS = new Set([
+  "create_business", "update_business", "delete_business",
+  "create_phone_number", "create_ivr_menu", "update_ivr_menu", "assign_number",
+  "create_contact", "import_contacts",
+  "create_campaign", "start_bulk_call", "start_marketing_job", "pause_job", "cancel_job",
+  "update_agent_config", "update_providers",
+  "create_routing_rule", "delete_routing_rule",
+  "manage_dnc",
+  "create_knowledge_base_item", "delete_knowledge_base_item",
+  "create_sla_rule",
+  "create_webhook", "delete_webhook",
+  "create_experiment",
+  "create_learning", "update_learning_status",
+  "create_disposition",
+  "create_template", "update_template", "delete_template",
+  "create_segment", "delete_segment",
+  "set_availability",
+  "update_inbound_capacity",
+  "approve_request", "reject_request",
+  "clear_queue",
 ]);
 
 function filterFields(updates: Record<string, unknown>, allowed: Set<string>): Record<string, unknown> {
@@ -175,6 +242,12 @@ Deno.serve(async (req) => {
   }
   const action = body.action as string;
   if (!action) return err("Missing 'action' field");
+
+  // ── Write permission check ──────────────────────────────────────
+  const perms = apiKey.permissions as Record<string, boolean> | null;
+  if (WRITE_ACTIONS.has(action) && perms && perms.write === false) {
+    return err("API key does not have write permission. Update key permissions in Settings.", 403);
+  }
 
   // ── Helpers ─────────────────────────────────────────────────────
   const bid = body.business_id as string | undefined;
@@ -306,7 +379,6 @@ Deno.serve(async (req) => {
       case "update_ivr_menu": {
         const menuId = body.menu_id as string;
         if (!menuId) return err("menu_id required");
-        // Verify ownership via ivr_menus -> businesses
         const { data: menuCheck } = await supabase.from("ivr_menus").select("business_id, businesses!inner(user_id)").eq("id", menuId).single();
         if (!menuCheck || (menuCheck as any).businesses?.user_id !== apiKey.user_id) return err("Unauthorized", 403);
         const updates = body.updates as Record<string, unknown>;
@@ -337,7 +409,6 @@ Deno.serve(async (req) => {
       case "assign_number": {
         const pnId = body.phone_number_id as string;
         if (!pnId) return err("phone_number_id required");
-        // Verify ownership
         const { data: pnCheck } = await supabase.from("phone_numbers").select("business_id, businesses!inner(user_id)").eq("id", pnId).single();
         if (!pnCheck || (pnCheck as any).businesses?.user_id !== apiKey.user_id) return err("Unauthorized", 403);
         const { data, error } = await supabase
@@ -545,7 +616,6 @@ Deno.serve(async (req) => {
       case "get_call_transcript": {
         const clId = body.call_log_id as string;
         if (!clId) return err("call_log_id required");
-        // Verify ownership via call_logs -> businesses
         const { data: clCheck } = await supabase.from("call_logs").select("business_id, businesses!inner(user_id)").eq("id", clId).single();
         if (!clCheck || (clCheck as any).businesses?.user_id !== apiKey.user_id) return err("Unauthorized", 403);
         const { data } = await supabase
@@ -626,6 +696,14 @@ Deno.serve(async (req) => {
         if (error) return err(error.message);
         return ok(data);
       }
+      case "delete_routing_rule": {
+        const ruleId = body.rule_id as string;
+        if (!ruleId) return err("rule_id required");
+        const { data: rCheck } = await supabase.from("call_routing_rules").select("business_id, businesses!inner(user_id)").eq("id", ruleId).single();
+        if (!rCheck || (rCheck as any).businesses?.user_id !== apiKey.user_id) return err("Unauthorized", 403);
+        await supabase.from("call_routing_rules").delete().eq("id", ruleId);
+        return ok({ deleted: true });
+      }
 
       // ── DNC ───────────────────────────────────────────────────
       case "manage_dnc": {
@@ -670,6 +748,7 @@ Deno.serve(async (req) => {
           .order("created_at", { ascending: false });
         return ok(data);
       }
+      case "create_knowledge_base_item":
       case "update_knowledge_base": {
         if (!bid) return err("business_id required");
         const title = body.title as string;
@@ -682,6 +761,14 @@ Deno.serve(async (req) => {
           .single();
         if (error) return err(error.message);
         return ok(data);
+      }
+      case "delete_knowledge_base_item": {
+        const itemId = body.item_id as string;
+        if (!itemId) return err("item_id required");
+        const { data: kbCheck } = await supabase.from("knowledge_base_items").select("business_id, businesses!inner(user_id)").eq("id", itemId).single();
+        if (!kbCheck || (kbCheck as any).businesses?.user_id !== apiKey.user_id) return err("Unauthorized", 403);
+        await supabase.from("knowledge_base_items").delete().eq("id", itemId);
+        return ok({ deleted: true });
       }
 
       // ── SLA ───────────────────────────────────────────────────
@@ -736,6 +823,14 @@ Deno.serve(async (req) => {
           .single();
         if (error) return err(error.message);
         return ok(data);
+      }
+      case "delete_webhook": {
+        const whId = body.webhook_id as string;
+        if (!whId) return err("webhook_id required");
+        const { data: whCheck } = await supabase.from("webhooks").select("business_id, businesses!inner(user_id)").eq("id", whId).single();
+        if (!whCheck || (whCheck as any).businesses?.user_id !== apiKey.user_id) return err("Unauthorized", 403);
+        await supabase.from("webhooks").delete().eq("id", whId);
+        return ok({ deleted: true });
       }
 
       // ── Experiments ───────────────────────────────────────────
@@ -849,6 +944,249 @@ Deno.serve(async (req) => {
           avg_duration_seconds: total ? Math.round(totalDuration / total) : 0,
           outcomes,
         });
+      }
+
+      // ══════════════════════════════════════════════════════════
+      // NEW ACTIONS
+      // ══════════════════════════════════════════════════════════
+
+      // ── Agent Learnings ───────────────────────────────────────
+      case "list_learnings": {
+        if (!bid) return err("business_id required");
+        let q = supabase.from("agent_learnings").select("*").eq("business_id", bid).order("created_at", { ascending: false }).limit(50);
+        if (body.status) q = q.eq("status", body.status as string);
+        const { data } = await q;
+        return ok(data);
+      }
+      case "create_learning": {
+        if (!bid) return err("business_id required");
+        const { data, error } = await supabase.from("agent_learnings").insert({
+          business_id: bid,
+          trigger_phrase: (body.trigger_phrase as string) || "",
+          learned_response: (body.learned_response as string) || "",
+          category: (body.category as string) || "faq",
+          source: "api",
+        }).select().single();
+        if (error) return err(error.message);
+        return ok(data);
+      }
+      case "update_learning_status": {
+        const lId = body.learning_id as string;
+        if (!lId) return err("learning_id required");
+        const newStatus = body.status as string;
+        if (!["approved", "rejected"].includes(newStatus)) return err("status must be approved or rejected");
+        const { data: lCheck } = await supabase.from("agent_learnings").select("business_id, businesses!inner(user_id)").eq("id", lId).single();
+        if (!lCheck || (lCheck as any).businesses?.user_id !== apiKey.user_id) return err("Unauthorized", 403);
+        const { data, error } = await supabase.from("agent_learnings").update({ status: newStatus }).eq("id", lId).select().single();
+        if (error) return err(error.message);
+        return ok(data);
+      }
+
+      // ── Call Scores ───────────────────────────────────────────
+      case "list_call_scores": {
+        if (!bid) return err("business_id required");
+        const { data } = await supabase
+          .from("call_scores")
+          .select("*, call_logs!inner(business_id, caller_name, caller_number, started_at)")
+          .eq("call_logs.business_id", bid)
+          .order("created_at", { ascending: false })
+          .limit((body.limit as number) || 50);
+        return ok(data);
+      }
+
+      // ── Call Transfers ────────────────────────────────────────
+      case "list_call_transfers": {
+        if (!bid) return err("business_id required");
+        const { data } = await supabase
+          .from("call_transfers")
+          .select("*")
+          .eq("business_id", bid)
+          .order("created_at", { ascending: false })
+          .limit((body.limit as number) || 50);
+        return ok(data);
+      }
+
+      // ── Call Dispositions ─────────────────────────────────────
+      case "list_dispositions": {
+        if (!bid) return err("business_id required");
+        const { data } = await supabase
+          .from("call_dispositions")
+          .select("*, call_logs(caller_name, caller_number, started_at)")
+          .eq("business_id", bid)
+          .order("created_at", { ascending: false })
+          .limit((body.limit as number) || 50);
+        return ok(data);
+      }
+      case "create_disposition": {
+        const callLogId = body.call_log_id as string;
+        if (!callLogId || !bid) return err("call_log_id and business_id required");
+        const { data, error } = await supabase.from("call_dispositions").upsert({
+          call_log_id: callLogId,
+          business_id: bid,
+          disposition: (body.disposition as string) || "completed",
+          notes: (body.notes as string) || "",
+        }, { onConflict: "call_log_id" }).select().single();
+        if (error) return err(error.message);
+        return ok(data);
+      }
+
+      // ── Message Templates ─────────────────────────────────────
+      case "list_templates": {
+        if (!bid) return err("business_id required");
+        const { data } = await supabase.from("message_templates").select("*").eq("business_id", bid).order("created_at", { ascending: false });
+        return ok(data);
+      }
+      case "create_template": {
+        if (!bid) return err("business_id required");
+        const { data, error } = await supabase.from("message_templates").insert({
+          business_id: bid,
+          trigger_event: (body.trigger_event as string) || "post_call",
+          template_text: (body.template_text as string) || "",
+          channel: (body.channel as string) || "sms",
+        }).select().single();
+        if (error) return err(error.message);
+        return ok(data);
+      }
+      case "update_template": {
+        const tId = body.template_id as string;
+        if (!tId) return err("template_id required");
+        const { data: tCheck } = await supabase.from("message_templates").select("business_id, businesses!inner(user_id)").eq("id", tId).single();
+        if (!tCheck || (tCheck as any).businesses?.user_id !== apiKey.user_id) return err("Unauthorized", 403);
+        const updates = body.updates as Record<string, unknown>;
+        if (!updates) return err("updates required");
+        const safeUpdates = filterFields(updates, ALLOWED_TEMPLATE_FIELDS);
+        if (Object.keys(safeUpdates).length === 0) return err("No allowed fields in updates");
+        const { data, error } = await supabase.from("message_templates").update(safeUpdates).eq("id", tId).select().single();
+        if (error) return err(error.message);
+        return ok(data);
+      }
+      case "delete_template": {
+        const tId = body.template_id as string;
+        if (!tId) return err("template_id required");
+        const { data: tCheck } = await supabase.from("message_templates").select("business_id, businesses!inner(user_id)").eq("id", tId).single();
+        if (!tCheck || (tCheck as any).businesses?.user_id !== apiKey.user_id) return err("Unauthorized", 403);
+        await supabase.from("message_templates").delete().eq("id", tId);
+        return ok({ deleted: true });
+      }
+
+      // ── Contact Segments ──────────────────────────────────────
+      case "list_segments": {
+        if (!bid) return err("business_id required");
+        const { data } = await supabase.from("contact_segments").select("*").eq("business_id", bid).order("created_at", { ascending: false });
+        return ok(data);
+      }
+      case "create_segment": {
+        if (!bid) return err("business_id required");
+        const { data, error } = await supabase.from("contact_segments").insert({
+          business_id: bid,
+          name: (body.name as string) || "",
+          filter_criteria: (body.filter_criteria as Record<string, unknown>) || {},
+        }).select().single();
+        if (error) return err(error.message);
+        return ok(data);
+      }
+      case "delete_segment": {
+        const sId = body.segment_id as string;
+        if (!sId) return err("segment_id required");
+        const { data: sCheck } = await supabase.from("contact_segments").select("business_id, businesses!inner(user_id)").eq("id", sId).single();
+        if (!sCheck || (sCheck as any).businesses?.user_id !== apiKey.user_id) return err("Unauthorized", 403);
+        await supabase.from("contact_segments").delete().eq("id", sId);
+        return ok({ deleted: true });
+      }
+
+      // ── Availability / Calendar ───────────────────────────────
+      case "get_availability": {
+        if (!bid) return err("business_id required");
+        const { data } = await supabase.from("availability_slots").select("*").eq("business_id", bid).order("day_of_week");
+        return ok(data);
+      }
+      case "set_availability": {
+        if (!bid) return err("business_id required");
+        const slots = body.slots as Array<Record<string, unknown>>;
+        if (!slots?.length) return err("slots array required");
+        await supabase.from("availability_slots").delete().eq("business_id", bid);
+        const rows = slots.map((s) => ({
+          business_id: bid,
+          day_of_week: s.day_of_week as number,
+          start_time: s.start_time as string,
+          end_time: s.end_time as string,
+          is_available: s.is_available !== false,
+        }));
+        const { error } = await supabase.from("availability_slots").insert(rows);
+        if (error) return err(error.message);
+        return ok({ saved: rows.length });
+      }
+
+      // ── Inbound Capacity ──────────────────────────────────────
+      case "get_inbound_capacity": {
+        if (!bid) return err("business_id required");
+        const { data } = await supabase.from("inbound_capacity_config").select("*").eq("business_id", bid).maybeSingle();
+        return ok(data);
+      }
+      case "update_inbound_capacity": {
+        if (!bid) return err("business_id required");
+        const updates: Record<string, unknown> = {};
+        if (body.max_concurrent_calls !== undefined) updates.max_concurrent_calls = body.max_concurrent_calls;
+        if (body.overflow_action !== undefined) updates.overflow_action = body.overflow_action;
+        if (body.overflow_target !== undefined) updates.overflow_target = body.overflow_target;
+        if (body.auto_scale !== undefined) updates.auto_scale = body.auto_scale;
+        if (Object.keys(updates).length === 0) return err("No fields to update");
+        const { data: existing } = await supabase.from("inbound_capacity_config").select("id").eq("business_id", bid).maybeSingle();
+        if (existing) {
+          const { data, error } = await supabase.from("inbound_capacity_config").update(updates).eq("business_id", bid).select().single();
+          if (error) return err(error.message);
+          return ok(data);
+        } else {
+          const { data, error } = await supabase.from("inbound_capacity_config").insert({ business_id: bid, ...updates }).select().single();
+          if (error) return err(error.message);
+          return ok(data);
+        }
+      }
+
+      // ── Approvals ─────────────────────────────────────────────
+      case "list_approvals": {
+        let q = supabase.from("approval_requests").select("*, businesses(name)").order("created_at", { ascending: false }).limit(50);
+        if (bid) q = q.eq("business_id", bid);
+        if (body.status) q = q.eq("status", body.status as string);
+        const { data } = await q;
+        return ok(data);
+      }
+      case "approve_request": {
+        const reqId = body.request_id as string;
+        if (!reqId) return err("request_id required");
+        const { data: arCheck } = await supabase.from("approval_requests").select("business_id, businesses!inner(user_id)").eq("id", reqId).single();
+        if (!arCheck || (arCheck as any).businesses?.user_id !== apiKey.user_id) return err("Unauthorized", 403);
+        const { data, error } = await supabase.from("approval_requests").update({ status: "approved", approved_by: apiKey.user_id }).eq("id", reqId).select().single();
+        if (error) return err(error.message);
+        return ok(data);
+      }
+      case "reject_request": {
+        const reqId = body.request_id as string;
+        if (!reqId) return err("request_id required");
+        const { data: arCheck } = await supabase.from("approval_requests").select("business_id, businesses!inner(user_id)").eq("id", reqId).single();
+        if (!arCheck || (arCheck as any).businesses?.user_id !== apiKey.user_id) return err("Unauthorized", 403);
+        const { data, error } = await supabase.from("approval_requests").update({ status: "rejected", approved_by: apiKey.user_id }).eq("id", reqId).select().single();
+        if (error) return err(error.message);
+        return ok(data);
+      }
+
+      // ── Competitor Mentions ───────────────────────────────────
+      case "list_competitor_mentions": {
+        if (!bid) return err("business_id required");
+        const { data } = await supabase.from("competitor_mentions").select("*").eq("business_id", bid).order("created_at", { ascending: false }).limit((body.limit as number) || 50);
+        return ok(data);
+      }
+
+      // ── Call Queue ────────────────────────────────────────────
+      case "list_queue": {
+        if (!bid) return err("business_id required");
+        const { data } = await supabase.from("call_queue").select("*").eq("business_id", bid).eq("status", "waiting").order("position");
+        return ok(data);
+      }
+      case "clear_queue": {
+        if (!bid) return err("business_id required");
+        await supabase.from("call_queue").delete().eq("business_id", bid).eq("status", "waiting");
+        return ok({ cleared: true });
       }
 
       default:

@@ -90,7 +90,7 @@ Deno.serve(async (req) => {
 
     switch (command) {
       // ════════════════════════════════════════════════════════
-      // MONITORING (original + enhanced)
+      // MONITORING
       // ════════════════════════════════════════════════════════
       case "/status": {
         const { count: businessCount } = await supabase.from("businesses").select("*", { count: "exact", head: true }).eq("user_id", userId);
@@ -366,7 +366,7 @@ Deno.serve(async (req) => {
 
       case "/dnc": {
         const parts = text.replace("/dnc", "").trim().split(" ");
-        const op = parts[0]; // add or remove
+        const op = parts[0];
         const bizName = parts[1];
         const phone = parts[2];
         if (!op || !bizName || !phone) { response = "Usage: /dnc [add/remove] [biz] [phone]"; break; }
@@ -447,6 +447,216 @@ Deno.serve(async (req) => {
       }
 
       // ════════════════════════════════════════════════════════
+      // NEW: AGENT MEMORY & LEARNINGS
+      // ════════════════════════════════════════════════════════
+      case "/learnings": {
+        const bizName = text.replace("/learnings", "").trim();
+        const biz = await findBiz(bizName);
+        if (!biz) { response = `❌ Business not found. Usage: /learnings [biz]`; break; }
+        const { data } = await supabase.from("agent_learnings").select("trigger_phrase,learned_response,category,status,confidence").eq("business_id", biz.id).order("created_at", { ascending: false }).limit(10);
+        if (!data?.length) { response = `🧠 No learnings for ${biz.name}.`; break; }
+        response = `🧠 *Agent Learnings: ${biz.name}*\n` + data.map(l => `• [${l.status}] ${l.category}: "${l.trigger_phrase}" → "${l.learned_response.substring(0, 60)}..." (${Math.round(l.confidence * 100)}%)`).join("\n");
+        break;
+      }
+
+      // ════════════════════════════════════════════════════════
+      // NEW: CALL SCORES
+      // ════════════════════════════════════════════════════════
+      case "/scores": {
+        const bizName = text.replace("/scores", "").trim();
+        const biz = await findBiz(bizName);
+        if (!biz) { response = `❌ Business not found. Usage: /scores [biz]`; break; }
+        const { data } = await supabase
+          .from("call_scores")
+          .select("summary,sentiment,agent_performance,customer_satisfaction,call_logs!inner(business_id,caller_name)")
+          .eq("call_logs.business_id", biz.id)
+          .order("created_at", { ascending: false }).limit(5);
+        if (!data?.length) { response = `📊 No call scores for ${biz.name}.`; break; }
+        response = `📊 *Call Scores: ${biz.name}*\n` + data.map((s: any) => `• ${s.call_logs?.caller_name || "?"}: Agent ${s.agent_performance}/5 | CSAT ${s.customer_satisfaction}/5 | ${s.sentiment}`).join("\n");
+        break;
+      }
+
+      // ════════════════════════════════════════════════════════
+      // NEW: MESSAGE TEMPLATES
+      // ════════════════════════════════════════════════════════
+      case "/templates": {
+        const bizName = text.replace("/templates", "").trim();
+        const biz = await findBiz(bizName);
+        if (!biz) { response = `❌ Business not found. Usage: /templates [biz]`; break; }
+        const { data } = await supabase.from("message_templates").select("trigger_event,template_text,channel,is_active").eq("business_id", biz.id).limit(10);
+        if (!data?.length) { response = `📝 No templates for ${biz.name}.`; break; }
+        response = `📝 *Templates: ${biz.name}*\n` + data.map(t => `• [${t.channel}] ${t.trigger_event}: "${t.template_text.substring(0, 50)}..." ${t.is_active ? "✅" : "❌"}`).join("\n");
+        break;
+      }
+
+      // ════════════════════════════════════════════════════════
+      // NEW: CONTACT SEGMENTS
+      // ════════════════════════════════════════════════════════
+      case "/segments": {
+        const bizName = text.replace("/segments", "").trim();
+        const biz = await findBiz(bizName);
+        if (!biz) { response = `❌ Business not found. Usage: /segments [biz]`; break; }
+        const { data } = await supabase.from("contact_segments").select("name,filter_criteria").eq("business_id", biz.id).limit(10);
+        if (!data?.length) { response = `🏷️ No segments for ${biz.name}.`; break; }
+        response = `🏷️ *Segments: ${biz.name}*\n` + data.map(s => `• ${s.name}: ${JSON.stringify(s.filter_criteria)}`).join("\n");
+        break;
+      }
+
+      // ════════════════════════════════════════════════════════
+      // NEW: INBOUND CAPACITY
+      // ════════════════════════════════════════════════════════
+      case "/capacity": {
+        const bizName = text.replace("/capacity", "").trim();
+        const biz = await findBiz(bizName);
+        if (!biz) { response = `❌ Business not found. Usage: /capacity [biz]`; break; }
+        const { data } = await supabase.from("inbound_capacity_config").select("*").eq("business_id", biz.id).maybeSingle();
+        if (!data) { response = `📞 No capacity config for ${biz.name}. Default: 10 concurrent.`; break; }
+        response = `📞 *Capacity: ${biz.name}*\nMax Concurrent: ${data.max_concurrent_calls}\nOverflow: ${data.overflow_action} → ${data.overflow_target || "N/A"}\nAuto-Scale: ${data.auto_scale ? "✅" : "❌"}`;
+        break;
+      }
+
+      case "/setcapacity": {
+        const parts = text.replace("/setcapacity", "").trim().split(" ");
+        const bizName = parts[0];
+        const max = parseInt(parts[1]);
+        if (!bizName || isNaN(max)) { response = "Usage: /setcapacity [biz] [max_concurrent]"; break; }
+        const biz = await findBiz(bizName);
+        if (!biz) { response = `❌ Business not found.`; break; }
+        const { data: existing } = await supabase.from("inbound_capacity_config").select("id").eq("business_id", biz.id).maybeSingle();
+        if (existing) {
+          await supabase.from("inbound_capacity_config").update({ max_concurrent_calls: max }).eq("business_id", biz.id);
+        } else {
+          await supabase.from("inbound_capacity_config").insert({ business_id: biz.id, max_concurrent_calls: max });
+        }
+        response = `✅ Max concurrent calls set to *${max}* for ${biz.name}`;
+        break;
+      }
+
+      // ════════════════════════════════════════════════════════
+      // NEW: APPROVALS
+      // ════════════════════════════════════════════════════════
+      case "/approvals": {
+        const { data } = await supabase.from("approval_requests").select("id,request_type,status,details,businesses(name)").eq("status", "pending").order("created_at", { ascending: false }).limit(10);
+        if (!data?.length) { response = "✅ No pending approvals."; break; }
+        response = `📋 *Pending Approvals*\n` + data.map((a: any) => `• \`${a.id.substring(0, 8)}\` ${a.request_type} — ${a.businesses?.name || "?"}`).join("\n") + `\n\nUse /approve [id] or /reject [id]`;
+        break;
+      }
+
+      case "/approve": {
+        const reqId = text.replace("/approve", "").trim();
+        if (!reqId) { response = "Usage: /approve [request_id]"; break; }
+        const { data: req } = await supabase.from("approval_requests").select("id").ilike("id", `${reqId}%`).eq("status", "pending").maybeSingle();
+        if (!req) { response = `❌ Pending request not found.`; break; }
+        await supabase.from("approval_requests").update({ status: "approved", approved_by: userId }).eq("id", req.id);
+        response = `✅ Request \`${req.id.substring(0, 8)}\` approved.`;
+        break;
+      }
+
+      case "/reject": {
+        const reqId = text.replace("/reject", "").trim();
+        if (!reqId) { response = "Usage: /reject [request_id]"; break; }
+        const { data: req } = await supabase.from("approval_requests").select("id").ilike("id", `${reqId}%`).eq("status", "pending").maybeSingle();
+        if (!req) { response = `❌ Pending request not found.`; break; }
+        await supabase.from("approval_requests").update({ status: "rejected", approved_by: userId }).eq("id", req.id);
+        response = `❌ Request \`${req.id.substring(0, 8)}\` rejected.`;
+        break;
+      }
+
+      // ════════════════════════════════════════════════════════
+      // NEW: CALL QUEUE
+      // ════════════════════════════════════════════════════════
+      case "/queue": {
+        const bizName = text.replace("/queue", "").trim();
+        if (!bizName) {
+          const { data } = await supabase.from("call_queue").select("*, businesses(name)").eq("status", "waiting").order("position").limit(20);
+          if (!data?.length) { response = "⏳ Queue is empty."; break; }
+          response = `⏳ *Call Queue (${data.length})*\n` + data.map((q: any) => `• #${q.position} ${q.caller_name || q.caller_number || "?"} — ${q.businesses?.name || "?"} (${q.estimated_wait || "?"}s wait)`).join("\n");
+        } else {
+          const biz = await findBiz(bizName);
+          if (!biz) { response = `❌ Business not found.`; break; }
+          const { data } = await supabase.from("call_queue").select("*").eq("business_id", biz.id).eq("status", "waiting").order("position");
+          if (!data?.length) { response = `⏳ Queue empty for ${biz.name}.`; break; }
+          response = `⏳ *Queue: ${biz.name} (${data.length})*\n` + data.map(q => `• #${q.position} ${q.caller_name || q.caller_number || "?"} (${q.estimated_wait || "?"}s wait)`).join("\n");
+        }
+        break;
+      }
+
+      case "/clearqueue": {
+        const bizName = text.replace("/clearqueue", "").trim();
+        if (!bizName) { response = "Usage: /clearqueue [biz]"; break; }
+        const biz = await findBiz(bizName);
+        if (!biz) { response = `❌ Business not found.`; break; }
+        const { count } = await supabase.from("call_queue").select("*", { count: "exact", head: true }).eq("business_id", biz.id).eq("status", "waiting");
+        await supabase.from("call_queue").delete().eq("business_id", biz.id).eq("status", "waiting");
+        response = `🗑️ Cleared ${count || 0} callers from queue for ${biz.name}`;
+        break;
+      }
+
+      // ════════════════════════════════════════════════════════
+      // NEW: KNOWLEDGE BASE
+      // ════════════════════════════════════════════════════════
+      case "/addkb": {
+        const [bizName, title, ...contentParts] = pipeSplit(text, "/addkb");
+        const content = contentParts.join("|").trim();
+        if (!bizName || !title || !content) { response = "Usage: /addkb [biz] | [title] | [content]"; break; }
+        const biz = await findBiz(bizName);
+        if (!biz) { response = `❌ Business not found.`; break; }
+        const { data, error } = await supabase.from("knowledge_base_items").insert({ business_id: biz.id, title, content }).select("id,title").single();
+        if (error) { response = `❌ ${error.message}`; break; }
+        response = `📚 KB item *${data.title}* added to ${biz.name}`;
+        break;
+      }
+
+      case "/kb": {
+        const bizName = text.replace("/kb", "").trim();
+        const biz = await findBiz(bizName);
+        if (!biz) { response = `❌ Business not found. Usage: /kb [biz]`; break; }
+        const { data } = await supabase.from("knowledge_base_items").select("title,content").eq("business_id", biz.id).limit(10);
+        if (!data?.length) { response = `📚 No KB items for ${biz.name}.`; break; }
+        response = `📚 *Knowledge Base: ${biz.name}*\n` + data.map(k => `• *${k.title}*: ${k.content.substring(0, 60)}...`).join("\n");
+        break;
+      }
+
+      // ════════════════════════════════════════════════════════
+      // NEW: ROUTING RULES
+      // ════════════════════════════════════════════════════════
+      case "/routing": {
+        const bizName = text.replace("/routing", "").trim();
+        const biz = await findBiz(bizName);
+        if (!biz) { response = `❌ Business not found. Usage: /routing [biz]`; break; }
+        const { data } = await supabase.from("call_routing_rules").select("condition_type,condition_value,action,target,priority,is_active").eq("business_id", biz.id).order("priority");
+        if (!data?.length) { response = `🔀 No routing rules for ${biz.name}.`; break; }
+        response = `🔀 *Routing: ${biz.name}*\n` + data.map(r => `• P${r.priority}: ${r.condition_type}="${r.condition_value}" → ${r.action}:${r.target} ${r.is_active ? "✅" : "❌"}`).join("\n");
+        break;
+      }
+
+      case "/addrule": {
+        const [bizName, condType, condValue, ruleAction] = pipeSplit(text, "/addrule");
+        if (!bizName || !condType || !condValue || !ruleAction) { response = "Usage: /addrule [biz] | [type] | [value] | [action]"; break; }
+        const biz = await findBiz(bizName);
+        if (!biz) { response = `❌ Business not found.`; break; }
+        const { error } = await supabase.from("call_routing_rules").insert({
+          business_id: biz.id, condition_type: condType, condition_value: condValue, action: ruleAction, target: "",
+        });
+        if (error) { response = `❌ ${error.message}`; break; }
+        response = `✅ Routing rule added: ${condType}="${condValue}" → ${ruleAction}`;
+        break;
+      }
+
+      // ════════════════════════════════════════════════════════
+      // NEW: COMPETITOR MENTIONS
+      // ════════════════════════════════════════════════════════
+      case "/competitors": {
+        const bizName = text.replace("/competitors", "").trim();
+        const biz = await findBiz(bizName);
+        if (!biz) { response = `❌ Business not found. Usage: /competitors [biz]`; break; }
+        const { data } = await supabase.from("competitor_mentions").select("competitor_name,context,created_at").eq("business_id", biz.id).order("created_at", { ascending: false }).limit(10);
+        if (!data?.length) { response = `🏢 No competitor mentions for ${biz.name}.`; break; }
+        response = `🏢 *Competitor Mentions: ${biz.name}*\n` + data.map(c => `• *${c.competitor_name}*: "${c.context.substring(0, 60)}..." (${new Date(c.created_at).toLocaleDateString()})`).join("\n");
+        break;
+      }
+
+      // ════════════════════════════════════════════════════════
       // HELP
       // ════════════════════════════════════════════════════════
       case "/help":
@@ -488,12 +698,38 @@ Deno.serve(async (req) => {
 /ivrcreate [biz] | [template]
 /assignnumber [id] [handler]
 
+🧠 *Agent Memory*
+/learnings [biz] — View learnings
+/scores [biz] — Call quality scores
+
+📝 *Templates & Segments*
+/templates [biz] — Message templates
+/segments [biz] — Contact segments
+
+📚 *Knowledge Base*
+/kb [biz] — List KB items
+/addkb [biz] | [title] | [content]
+
+🔀 *Routing & Capacity*
+/routing [biz] — Routing rules
+/addrule [biz] | [type] | [value] | [action]
+/capacity [biz] — Inbound capacity
+/setcapacity [biz] [max] — Set max calls
+
+📋 *Approvals & Queue*
+/approvals — Pending approvals
+/approve [id] — Approve request
+/reject [id] — Reject request
+/queue [biz] — Call queue
+/clearqueue [biz] — Clear queue
+
 🔍 *Intelligence*
 /transcript [call_id] — Get transcript
 /dnc [add/remove] [biz] [phone]
 /webhooks [biz] — List webhooks
 /experiments [biz] — A/B tests
-/profiles [biz] — Customer profiles`;
+/profiles [biz] — Customer profiles
+/competitors [biz] — Competitor mentions`;
         break;
       }
     }
