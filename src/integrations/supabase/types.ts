@@ -641,15 +641,19 @@ export type Database = {
       businesses: {
         Row: {
           agent_mode: string
+          barge_in_enabled: boolean
           closing_techniques: string
           created_at: string
+          default_ivr_menu_id: string | null
           default_language: string
+          endpointing_threshold_ms: number
           greeting_audio_url: string | null
           greeting_message: string
           hold_music_url: string | null
           id: string
           industry: string
           instructions: string
+          ivr_enabled: boolean
           knowledge_base: string
           livekit_enabled: boolean
           livekit_room_prefix: string | null
@@ -665,6 +669,8 @@ export type Database = {
           personality_urgency: number
           sales_script: string
           status: string
+          stt_model: string
+          stt_provider: string
           supported_languages: string[]
           timezone: string
           tts_api_endpoint: string | null
@@ -675,18 +681,23 @@ export type Database = {
           upsell_prompts: string
           user_id: string
           voice: string
+          voicemail_detection_enabled: boolean
         }
         Insert: {
           agent_mode?: string
+          barge_in_enabled?: boolean
           closing_techniques?: string
           created_at?: string
+          default_ivr_menu_id?: string | null
           default_language?: string
+          endpointing_threshold_ms?: number
           greeting_audio_url?: string | null
           greeting_message?: string
           hold_music_url?: string | null
           id?: string
           industry?: string
           instructions?: string
+          ivr_enabled?: boolean
           knowledge_base?: string
           livekit_enabled?: boolean
           livekit_room_prefix?: string | null
@@ -702,6 +713,8 @@ export type Database = {
           personality_urgency?: number
           sales_script?: string
           status?: string
+          stt_model?: string
+          stt_provider?: string
           supported_languages?: string[]
           timezone?: string
           tts_api_endpoint?: string | null
@@ -712,18 +725,23 @@ export type Database = {
           upsell_prompts?: string
           user_id: string
           voice?: string
+          voicemail_detection_enabled?: boolean
         }
         Update: {
           agent_mode?: string
+          barge_in_enabled?: boolean
           closing_techniques?: string
           created_at?: string
+          default_ivr_menu_id?: string | null
           default_language?: string
+          endpointing_threshold_ms?: number
           greeting_audio_url?: string | null
           greeting_message?: string
           hold_music_url?: string | null
           id?: string
           industry?: string
           instructions?: string
+          ivr_enabled?: boolean
           knowledge_base?: string
           livekit_enabled?: boolean
           livekit_room_prefix?: string | null
@@ -739,6 +757,8 @@ export type Database = {
           personality_urgency?: number
           sales_script?: string
           status?: string
+          stt_model?: string
+          stt_provider?: string
           supported_languages?: string[]
           timezone?: string
           tts_api_endpoint?: string | null
@@ -749,8 +769,17 @@ export type Database = {
           upsell_prompts?: string
           user_id?: string
           voice?: string
+          voicemail_detection_enabled?: boolean
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "businesses_default_ivr_menu_id_fkey"
+            columns: ["default_ivr_menu_id"]
+            isOneToOne: false
+            referencedRelation: "ivr_menus"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       calendar_connections: {
         Row: {
@@ -1556,6 +1585,122 @@ export type Database = {
         }
         Relationships: []
       }
+      ivr_menus: {
+        Row: {
+          business_id: string
+          created_at: string
+          fallback_action: string
+          fallback_target: string | null
+          greeting_audio_url: string | null
+          greeting_text: string
+          id: string
+          is_active: boolean
+          max_retries: number
+          name: string
+          template_type: string
+          timeout_seconds: number
+        }
+        Insert: {
+          business_id: string
+          created_at?: string
+          fallback_action?: string
+          fallback_target?: string | null
+          greeting_audio_url?: string | null
+          greeting_text?: string
+          id?: string
+          is_active?: boolean
+          max_retries?: number
+          name?: string
+          template_type?: string
+          timeout_seconds?: number
+        }
+        Update: {
+          business_id?: string
+          created_at?: string
+          fallback_action?: string
+          fallback_target?: string | null
+          greeting_audio_url?: string | null
+          greeting_text?: string
+          id?: string
+          is_active?: boolean
+          max_retries?: number
+          name?: string
+          template_type?: string
+          timeout_seconds?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ivr_menus_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ivr_options: {
+        Row: {
+          action: string
+          agent_instructions: string | null
+          business_id: string
+          created_at: string
+          digit: string
+          id: string
+          is_active: boolean
+          ivr_menu_id: string
+          label: string
+          mask_caller_id: boolean
+          priority: number
+          record_call: boolean
+          target_phone: string | null
+        }
+        Insert: {
+          action?: string
+          agent_instructions?: string | null
+          business_id: string
+          created_at?: string
+          digit?: string
+          id?: string
+          is_active?: boolean
+          ivr_menu_id: string
+          label?: string
+          mask_caller_id?: boolean
+          priority?: number
+          record_call?: boolean
+          target_phone?: string | null
+        }
+        Update: {
+          action?: string
+          agent_instructions?: string | null
+          business_id?: string
+          created_at?: string
+          digit?: string
+          id?: string
+          is_active?: boolean
+          ivr_menu_id?: string
+          label?: string
+          mask_caller_id?: boolean
+          priority?: number
+          record_call?: boolean
+          target_phone?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ivr_options_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ivr_options_ivr_menu_id_fkey"
+            columns: ["ivr_menu_id"]
+            isOneToOne: false
+            referencedRelation: "ivr_menus"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       knowledge_base_items: {
         Row: {
           business_id: string
@@ -1667,38 +1812,120 @@ export type Database = {
           },
         ]
       }
-      phone_numbers: {
+      number_assignments: {
         Row: {
           business_id: string
           created_at: string
-          direction: string
+          forward_to_phone: string | null
+          handler_name: string | null
+          handler_type: string
           id: string
-          label: string | null
-          phone_number: string
-          provider: string
-          provider_sid: string | null
-          status: string
+          ivr_menu_id: string | null
+          mask_caller_id: boolean
+          monitor_enabled: boolean
+          phone_number_id: string
+          record_calls: boolean
         }
         Insert: {
           business_id: string
           created_at?: string
-          direction?: string
+          forward_to_phone?: string | null
+          handler_name?: string | null
+          handler_type?: string
           id?: string
-          label?: string | null
-          phone_number: string
-          provider?: string
-          provider_sid?: string | null
-          status?: string
+          ivr_menu_id?: string | null
+          mask_caller_id?: boolean
+          monitor_enabled?: boolean
+          phone_number_id: string
+          record_calls?: boolean
         }
         Update: {
           business_id?: string
           created_at?: string
-          direction?: string
+          forward_to_phone?: string | null
+          handler_name?: string | null
+          handler_type?: string
           id?: string
+          ivr_menu_id?: string | null
+          mask_caller_id?: boolean
+          monitor_enabled?: boolean
+          phone_number_id?: string
+          record_calls?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "number_assignments_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "number_assignments_ivr_menu_id_fkey"
+            columns: ["ivr_menu_id"]
+            isOneToOne: false
+            referencedRelation: "ivr_menus"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "number_assignments_phone_number_id_fkey"
+            columns: ["phone_number_id"]
+            isOneToOne: true
+            referencedRelation: "phone_numbers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      phone_numbers: {
+        Row: {
+          assigned_handler_name: string | null
+          assigned_handler_type: string
+          business_id: string
+          created_at: string
+          direction: string
+          forward_to_phone: string | null
+          id: string
+          ivr_menu_id: string | null
+          label: string | null
+          mask_caller_id: boolean
+          phone_number: string
+          provider: string
+          provider_sid: string | null
+          record_calls: boolean
+          status: string
+        }
+        Insert: {
+          assigned_handler_name?: string | null
+          assigned_handler_type?: string
+          business_id: string
+          created_at?: string
+          direction?: string
+          forward_to_phone?: string | null
+          id?: string
+          ivr_menu_id?: string | null
           label?: string | null
+          mask_caller_id?: boolean
+          phone_number: string
+          provider?: string
+          provider_sid?: string | null
+          record_calls?: boolean
+          status?: string
+        }
+        Update: {
+          assigned_handler_name?: string | null
+          assigned_handler_type?: string
+          business_id?: string
+          created_at?: string
+          direction?: string
+          forward_to_phone?: string | null
+          id?: string
+          ivr_menu_id?: string | null
+          label?: string | null
+          mask_caller_id?: boolean
           phone_number?: string
           provider?: string
           provider_sid?: string | null
+          record_calls?: boolean
           status?: string
         }
         Relationships: [
@@ -1707,6 +1934,13 @@ export type Database = {
             columns: ["business_id"]
             isOneToOne: false
             referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "phone_numbers_ivr_menu_id_fkey"
+            columns: ["ivr_menu_id"]
+            isOneToOne: false
+            referencedRelation: "ivr_menus"
             referencedColumns: ["id"]
           },
         ]
