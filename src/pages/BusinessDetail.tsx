@@ -14,6 +14,12 @@ import LiveKitCallTab from "@/components/business/LiveKitCallTab";
 import KnowledgeBaseTab from "@/components/business/KnowledgeBaseTab";
 import CallLogsTab from "@/components/business/CallLogsTab";
 import GoogleCalendarTab from "@/components/business/GoogleCalendarTab";
+import AgentMemoryTab from "@/components/business/AgentMemoryTab";
+import RoutingRulesTab from "@/components/business/RoutingRulesTab";
+import CustomerProfilesTab from "@/components/business/CustomerProfilesTab";
+import VoicemailTab from "@/components/business/VoicemailTab";
+import WebhooksTab from "@/components/business/WebhooksTab";
+import MessageTemplatesTab from "@/components/business/MessageTemplatesTab";
 
 const BusinessDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -58,52 +64,46 @@ const BusinessDetail = () => {
         <div>
           <h1 className="text-2xl font-bold text-foreground">{business.name}</h1>
           <p className="text-sm text-muted-foreground capitalize">
-            {business.industry?.replace("_", " ")} • {business.status}
+            {business.industry?.replace("_", " ")} • {business.status} • {business.agent_mode} mode
           </p>
         </div>
       </div>
 
       <Tabs defaultValue="settings" className="w-full">
-        <TabsList className="flex w-full max-w-5xl overflow-x-auto">
+        <TabsList className="flex w-full max-w-6xl overflow-x-auto">
           <TabsTrigger value="settings">Agent</TabsTrigger>
+          <TabsTrigger value="memory">Memory</TabsTrigger>
           <TabsTrigger value="providers">Providers</TabsTrigger>
           <TabsTrigger value="phones">Phones</TabsTrigger>
+          <TabsTrigger value="routing">Routing</TabsTrigger>
           <TabsTrigger value="calendar">Calendar</TabsTrigger>
           <TabsTrigger value="gcal">Google Cal</TabsTrigger>
           <TabsTrigger value="knowledge">Knowledge</TabsTrigger>
           <TabsTrigger value="contacts">Contacts</TabsTrigger>
+          <TabsTrigger value="customers">CRM</TabsTrigger>
           <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
           <TabsTrigger value="call-logs">Call Logs</TabsTrigger>
+          <TabsTrigger value="voicemail">Voicemail</TabsTrigger>
+          <TabsTrigger value="templates">Messages</TabsTrigger>
+          <TabsTrigger value="webhooks">Webhooks</TabsTrigger>
           {business.livekit_enabled && <TabsTrigger value="livekit">Live Call</TabsTrigger>}
         </TabsList>
 
-        <TabsContent value="settings" className="mt-6">
-          <BusinessSettingsTab business={business} />
-        </TabsContent>
-        <TabsContent value="providers" className="mt-6">
-          <ProvidersTab business={business} />
-        </TabsContent>
-        <TabsContent value="phones" className="mt-6">
-          <PhoneNumbersTab businessId={business.id} />
-        </TabsContent>
-        <TabsContent value="calendar" className="mt-6">
-          <CalendarTab businessId={business.id} />
-        </TabsContent>
-        <TabsContent value="gcal" className="mt-6">
-          <GoogleCalendarTab businessId={business.id} />
-        </TabsContent>
-        <TabsContent value="knowledge" className="mt-6">
-          <KnowledgeBaseTab businessId={business.id} />
-        </TabsContent>
-        <TabsContent value="contacts" className="mt-6">
-          <ContactsTab businessId={business.id} />
-        </TabsContent>
-        <TabsContent value="campaigns" className="mt-6">
-          <CampaignsTab businessId={business.id} />
-        </TabsContent>
-        <TabsContent value="call-logs" className="mt-6">
-          <CallLogsTab businessId={business.id} />
-        </TabsContent>
+        <TabsContent value="settings" className="mt-6"><BusinessSettingsTab business={business} /></TabsContent>
+        <TabsContent value="memory" className="mt-6"><AgentMemoryTab businessId={business.id} /></TabsContent>
+        <TabsContent value="providers" className="mt-6"><ProvidersTab business={business} /></TabsContent>
+        <TabsContent value="phones" className="mt-6"><PhoneNumbersTab businessId={business.id} /></TabsContent>
+        <TabsContent value="routing" className="mt-6"><RoutingRulesTab businessId={business.id} /></TabsContent>
+        <TabsContent value="calendar" className="mt-6"><CalendarTab businessId={business.id} /></TabsContent>
+        <TabsContent value="gcal" className="mt-6"><GoogleCalendarTab businessId={business.id} /></TabsContent>
+        <TabsContent value="knowledge" className="mt-6"><KnowledgeBaseTab businessId={business.id} /></TabsContent>
+        <TabsContent value="contacts" className="mt-6"><ContactsTab businessId={business.id} /></TabsContent>
+        <TabsContent value="customers" className="mt-6"><CustomerProfilesTab businessId={business.id} /></TabsContent>
+        <TabsContent value="campaigns" className="mt-6"><CampaignsTab businessId={business.id} /></TabsContent>
+        <TabsContent value="call-logs" className="mt-6"><CallLogsTab businessId={business.id} /></TabsContent>
+        <TabsContent value="voicemail" className="mt-6"><VoicemailTab businessId={business.id} /></TabsContent>
+        <TabsContent value="templates" className="mt-6"><MessageTemplatesTab businessId={business.id} /></TabsContent>
+        <TabsContent value="webhooks" className="mt-6"><WebhooksTab businessId={business.id} /></TabsContent>
         {business.livekit_enabled && (
           <TabsContent value="livekit" className="mt-6">
             <LiveKitCallTab businessId={business.id} businessName={business.name} />
