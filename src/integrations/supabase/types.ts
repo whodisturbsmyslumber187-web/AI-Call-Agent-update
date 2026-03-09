@@ -504,6 +504,140 @@ export type Database = {
           },
         ]
       }
+      bulk_marketing_entries: {
+        Row: {
+          attempt_count: number
+          business_id: string
+          callback_at: string | null
+          contact_name: string
+          contact_phone: string
+          created_at: string
+          delivery_result: string | null
+          id: string
+          job_id: string
+          sms_sid: string | null
+          status: string
+        }
+        Insert: {
+          attempt_count?: number
+          business_id: string
+          callback_at?: string | null
+          contact_name?: string
+          contact_phone?: string
+          created_at?: string
+          delivery_result?: string | null
+          id?: string
+          job_id: string
+          sms_sid?: string | null
+          status?: string
+        }
+        Update: {
+          attempt_count?: number
+          business_id?: string
+          callback_at?: string | null
+          contact_name?: string
+          contact_phone?: string
+          created_at?: string
+          delivery_result?: string | null
+          id?: string
+          job_id?: string
+          sms_sid?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bulk_marketing_entries_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bulk_marketing_entries_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "bulk_marketing_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bulk_marketing_jobs: {
+        Row: {
+          audio_url: string | null
+          business_id: string
+          callback_number: string
+          caller_id: string
+          completed: number
+          completed_at: string | null
+          concurrency_limit: number
+          created_at: string
+          failed: number
+          id: string
+          in_progress: number
+          job_type: string
+          message_content: string
+          name: string
+          rate_per_minute: number
+          ring_count: number
+          scheduled_at: string | null
+          started_at: string | null
+          status: string
+          total_contacts: number
+        }
+        Insert: {
+          audio_url?: string | null
+          business_id: string
+          callback_number?: string
+          caller_id?: string
+          completed?: number
+          completed_at?: string | null
+          concurrency_limit?: number
+          created_at?: string
+          failed?: number
+          id?: string
+          in_progress?: number
+          job_type?: string
+          message_content?: string
+          name?: string
+          rate_per_minute?: number
+          ring_count?: number
+          scheduled_at?: string | null
+          started_at?: string | null
+          status?: string
+          total_contacts?: number
+        }
+        Update: {
+          audio_url?: string | null
+          business_id?: string
+          callback_number?: string
+          caller_id?: string
+          completed?: number
+          completed_at?: string | null
+          concurrency_limit?: number
+          created_at?: string
+          failed?: number
+          id?: string
+          in_progress?: number
+          job_type?: string
+          message_content?: string
+          name?: string
+          rate_per_minute?: number
+          ring_count?: number
+          scheduled_at?: string | null
+          started_at?: string | null
+          status?: string
+          total_contacts?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bulk_marketing_jobs_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       businesses: {
         Row: {
           agent_mode: string
@@ -1846,6 +1980,47 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "sla_rules_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sms_templates: {
+        Row: {
+          body: string
+          business_id: string
+          category: string
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          variables: Json
+        }
+        Insert: {
+          body?: string
+          business_id: string
+          category?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          variables?: Json
+        }
+        Update: {
+          body?: string
+          business_id?: string
+          category?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          variables?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sms_templates_business_id_fkey"
             columns: ["business_id"]
             isOneToOne: false
             referencedRelation: "businesses"
