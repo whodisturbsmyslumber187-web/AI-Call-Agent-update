@@ -1,0 +1,52 @@
+
+-- Drop all redundant "Service role manages..." RLS policies
+-- service_role bypasses RLS by default, so these are unnecessary
+
+DROP POLICY IF EXISTS "Service role manages ab_tests" ON public.ab_tests;
+DROP POLICY IF EXISTS "Service role manages activity_log" ON public.activity_log;
+DROP POLICY IF EXISTS "Service role manages agent chats" ON public.agent_chat_messages;
+DROP POLICY IF EXISTS "Service role can manage agent config" ON public.agent_config;
+DROP POLICY IF EXISTS "Service role manages learnings" ON public.agent_learnings;
+DROP POLICY IF EXISTS "Service role manages credentials" ON public.api_credentials;
+DROP POLICY IF EXISTS "Service role manages api_keys" ON public.api_keys;
+DROP POLICY IF EXISTS "Service role manages approvals" ON public.approval_requests;
+DROP POLICY IF EXISTS "Service role manages availability" ON public.availability_slots;
+DROP POLICY IF EXISTS "Service role manages bulk_call_entries" ON public.bulk_call_entries;
+DROP POLICY IF EXISTS "Service role manages bulk_call_jobs" ON public.bulk_call_jobs;
+DROP POLICY IF EXISTS "Service role manages bulk_marketing_entries" ON public.bulk_marketing_entries;
+DROP POLICY IF EXISTS "Service role manages bulk_marketing_jobs" ON public.bulk_marketing_jobs;
+DROP POLICY IF EXISTS "Service role manages businesses" ON public.businesses;
+DROP POLICY IF EXISTS "Service role manages calendar connections" ON public.calendar_connections;
+DROP POLICY IF EXISTS "Service role manages call_dispositions" ON public.call_dispositions;
+DROP POLICY IF EXISTS "Service role manages call logs" ON public.call_logs;
+DROP POLICY IF EXISTS "Service role manages queue" ON public.call_queue;
+DROP POLICY IF EXISTS "Service role manages routing rules" ON public.call_routing_rules;
+DROP POLICY IF EXISTS "Service role manages call scores" ON public.call_scores;
+DROP POLICY IF EXISTS "Service role manages summaries" ON public.call_summaries;
+DROP POLICY IF EXISTS "Service role manages call_transfers" ON public.call_transfers;
+DROP POLICY IF EXISTS "Service role manages campaign contacts" ON public.campaign_contacts;
+DROP POLICY IF EXISTS "Service role manages campaigns" ON public.campaigns;
+DROP POLICY IF EXISTS "Service role manages competitor_mentions" ON public.competitor_mentions;
+DROP POLICY IF EXISTS "Service role manages contact_segments" ON public.contact_segments;
+DROP POLICY IF EXISTS "Service role manages contacts" ON public.contacts;
+DROP POLICY IF EXISTS "Service role can manage conversations" ON public.conversations;
+DROP POLICY IF EXISTS "Service role manages customer profiles" ON public.customer_profiles;
+DROP POLICY IF EXISTS "Service role manages layouts" ON public.dashboard_layouts;
+DROP POLICY IF EXISTS "Service role manages dnc_list" ON public.dnc_list;
+DROP POLICY IF EXISTS "Service role manages inbound_capacity" ON public.inbound_capacity_config;
+DROP POLICY IF EXISTS "Service role manages ivr_menus" ON public.ivr_menus;
+DROP POLICY IF EXISTS "Service role manages ivr_options" ON public.ivr_options;
+DROP POLICY IF EXISTS "Service role manages knowledge_base_items" ON public.knowledge_base_items;
+DROP POLICY IF EXISTS "Service role manages message_templates" ON public.message_templates;
+DROP POLICY IF EXISTS "Service role manages number_assignments" ON public.number_assignments;
+DROP POLICY IF EXISTS "Service role manages phone_numbers" ON public.phone_numbers;
+DROP POLICY IF EXISTS "Service role manages platform_settings" ON public.platform_settings;
+DROP POLICY IF EXISTS "Service role manages provider_failover" ON public.provider_failover_config;
+DROP POLICY IF EXISTS "Service role manages reservations" ON public.reservations;
+DROP POLICY IF EXISTS "Service role manages revenue_entries" ON public.revenue_entries;
+DROP POLICY IF EXISTS "Service role manages scheduled_reports" ON public.scheduled_reports;
+DROP POLICY IF EXISTS "Service role manages sla_rules" ON public.sla_rules;
+DROP POLICY IF EXISTS "Service role manages telegram_config" ON public.telegram_config;
+DROP POLICY IF EXISTS "Service role manages user_roles" ON public.user_roles;
+DROP POLICY IF EXISTS "Service role manages voicemails" ON public.voicemails;
+DROP POLICY IF EXISTS "Service role manages webhooks" ON public.webhooks;
