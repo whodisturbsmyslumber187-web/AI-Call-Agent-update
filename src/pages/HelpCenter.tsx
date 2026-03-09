@@ -1,7 +1,7 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Building2, Phone, Bot, GitFork, Users, Megaphone, BookOpen, PhoneCall, Route, ShieldAlert, Voicemail, Webhook, FlaskConical, LayoutDashboard, Activity, Monitor, Key, RefreshCw, Ban, DollarSign, Send, HelpCircle, MessageSquare } from "lucide-react";
+import { Building2, Phone, Bot, GitFork, Users, Megaphone, BookOpen, PhoneCall, Route, ShieldAlert, Voicemail, Webhook, FlaskConical, LayoutDashboard, Activity, Monitor, Key, RefreshCw, Ban, DollarSign, Send, HelpCircle, MessageSquare, Brain, Tag, Filter, Calendar, Gauge, CheckSquare, BarChart3 } from "lucide-react";
 
 const sections = [
   {
@@ -22,7 +22,8 @@ This dashboard lets you create AI phone agents that answer calls, make outbound 
 
 **Single-Admin Setup:** This platform is designed for you as the sole operator. All businesses you create are tied to your account.
 
-**API Actions:** \`list_businesses\`, \`create_business\``,
+**API Actions:** \`list_businesses\`, \`create_business\`
+**Telegram:** \`/status\`, \`/create [name] [industry]\``,
   },
   {
     id: "businesses",
@@ -47,7 +48,8 @@ This dashboard lets you create AI phone agents that answer calls, make outbound 
 - Use the "Instructions" tab to give the agent detailed context about your business
 - The agent will use the Knowledge Base to answer questions it hasn't been explicitly taught
 
-**API Actions:** \`list_businesses\`, \`get_business\`, \`create_business\`, \`update_business\``,
+**API Actions:** \`list_businesses\`, \`get_business\`, \`create_business\`, \`update_business\`, \`delete_business\`
+**Telegram:** \`/create\`, \`/delete\`, \`/config\`, \`/pause\`, \`/resume\`, \`/report\``,
   },
   {
     id: "agent-config",
@@ -78,7 +80,8 @@ This dashboard lets you create AI phone agents that answer calls, make outbound 
 - Test different personality settings with the A/B Experiments feature
 - The agent combines instructions + knowledge base + sales script for its responses
 
-**API Actions:** \`get_agent_config\`, \`update_agent_config\``,
+**API Actions:** \`get_agent_config\`, \`update_agent_config\`, \`update_providers\`
+**Telegram:** \`/setprompt [name] | [instructions]\`, \`/setvoice [name] [voice]\`, \`/setmode [name] [mode]\``,
   },
   {
     id: "ivr",
@@ -112,7 +115,8 @@ This dashboard lets you create AI phone agents that answer calls, make outbound 
 - Always include a "Talk to a person" option
 - Set appropriate timeout (how long to wait for a keypress) and max retries
 
-**API Actions:** \`create_ivr_menu\`, \`update_ivr_menu\``,
+**API Actions:** \`create_ivr_menu\`, \`update_ivr_menu\`
+**Telegram:** \`/ivrcreate [biz] | [template]\``,
   },
   {
     id: "phone-numbers",
@@ -145,7 +149,8 @@ Toggle recording per number. Recordings are stored and accessible from Call Logs
 - Label numbers clearly ("Main Line", "Sales Direct", etc.)
 - Enable monitoring to see live call status for specific numbers
 
-**API Actions:** \`list_phone_numbers\`, \`assign_number\``,
+**API Actions:** \`list_phone_numbers\`, \`create_phone_number\`, \`assign_number\`
+**Telegram:** \`/assignnumber [id] [handler]\``,
   },
   {
     id: "contacts",
@@ -161,7 +166,7 @@ Toggle recording per number. Recordings are stored and accessible from Call Logs
 **Contact Segments:**
 Create filtered groups for targeted campaigns:
 1. Go to **Contact Segments** tab
-2. Create a segment with filter criteria (JSON-based)
+2. Create a segment with filter criteria (min lead score, lead status, tag)
 3. Use segments to target specific groups in bulk calling campaigns
 
 **Tips:**
@@ -169,7 +174,8 @@ Create filtered groups for targeted campaigns:
 - Use notes to track customer preferences and history
 - Segments help you avoid calling the same people for different campaigns
 
-**API Actions:** \`list_contacts\`, \`create_contact\`, \`import_contacts\``,
+**API Actions:** \`list_contacts\`, \`create_contact\`, \`import_contacts\`, \`list_segments\`, \`create_segment\`, \`delete_segment\`
+**Telegram:** \`/addcontact [biz] | [name] | [phone]\`, \`/contacts [biz]\`, \`/segments [biz]\``,
   },
   {
     id: "campaigns",
@@ -203,7 +209,8 @@ The **Bulk Calling** tab lets you run high-volume outbound jobs:
 - Use call dispositions to track outcomes and plan follow-ups
 - Monitor the first few calls live to ensure quality
 
-**API Actions:** \`list_campaigns\`, \`create_campaign\`, \`start_bulk_call\`, \`get_job_status\`, \`pause_job\`, \`cancel_job\``,
+**API Actions:** \`list_campaigns\`, \`create_campaign\`, \`start_bulk_call\`, \`start_marketing_job\`, \`get_job_status\`, \`pause_job\`, \`cancel_job\`
+**Telegram:** \`/campaign [biz] | [name] | [script]\`, \`/startbulk [biz]\`, \`/startmarketing [biz] | [type] | [msg]\`, \`/jobstatus [id]\`, \`/pausejob [id]\`, \`/canceljob [id]\``,
   },
   {
     id: "marketing",
@@ -246,7 +253,8 @@ Instantly call new leads as they come in.
 - Test with small batches before large campaigns
 - Schedule campaigns during business hours for best response rates
 
-**API Actions:** \`start_marketing_job\`, \`get_job_status\`, \`pause_job\`, \`cancel_job\``,
+**API Actions:** \`start_marketing_job\`, \`get_job_status\`, \`pause_job\`, \`cancel_job\`
+**Telegram:** \`/startmarketing [biz] | [rvm/sms] | [message]\``,
   },
   {
     id: "knowledge-base",
@@ -273,12 +281,13 @@ Instantly call new leads as they come in.
 - Update regularly when information changes
 - The agent combines knowledge base + instructions to form responses
 
-**API Actions:** Use \`update_business\` with \`knowledge_base\` field for the main text, or manage items via the UI.`,
+**API Actions:** \`list_knowledge_base\`, \`create_knowledge_base_item\`, \`delete_knowledge_base_item\`
+**Telegram:** \`/kb [biz]\`, \`/addkb [biz] | [title] | [content]\``,
   },
   {
     id: "call-logs",
     icon: PhoneCall,
-    title: "Call Logs & Summaries",
+    title: "Call Logs, Summaries & Dispositions",
     content: `**What it does:** View complete history of all calls handled by your AI agents.
 
 **Call Logs Tab:**
@@ -294,16 +303,25 @@ Instantly call new leads as they come in.
 - Great for quick review without reading full transcripts
 
 **Call Dispositions Tab:**
-- Tag calls with outcomes: Completed, Appointment Set, Follow-up Needed, etc.
-- Add notes and schedule next actions
+- Tag calls with outcomes: Interested, Not Interested, Callback, Wrong Number, DNC, No Answer, Voicemail Left, Completed
+- Analytics badges showing disposition distribution
 - Track conversion rates across campaigns
+
+**Call Scores Tab:**
+- AI-scored quality metrics per call
+- Agent performance score (1-5)
+- Customer satisfaction score (1-5)
+- Sentiment analysis (positive/neutral/negative)
+- Key moments highlighted
 
 **Tips:**
 - Review summaries daily to catch issues early
 - Use dispositions to build a follow-up pipeline
-- Check transcripts when the AI handles an unusual scenario — use insights to improve instructions
+- Check scores to identify training opportunities
+- Check transcripts when the AI handles an unusual scenario
 
-**API Actions:** \`list_call_logs\`, \`list_call_summaries\`, \`get_call_transcript\``,
+**API Actions:** \`list_call_logs\`, \`list_call_summaries\`, \`get_call_transcript\`, \`list_call_scores\`, \`list_dispositions\`, \`create_disposition\`, \`list_call_transfers\`
+**Telegram:** \`/transcript [call_id]\`, \`/scores [biz]\`, \`/calls\``,
   },
   {
     id: "routing",
@@ -327,7 +345,10 @@ Instantly call new leads as they come in.
 **Tips:**
 - Always have a fallback rule for unmatched conditions
 - Use time-based routing to send after-hours calls to voicemail
-- Combine with IVR for sophisticated call flows`,
+- Combine with IVR for sophisticated call flows
+
+**API Actions:** \`list_routing_rules\`, \`create_routing_rule\`, \`delete_routing_rule\`
+**Telegram:** \`/routing [biz]\`, \`/addrule [biz] | [type] | [value] | [action]\``,
   },
   {
     id: "sla",
@@ -351,7 +372,10 @@ Instantly call new leads as they come in.
 **Tips:**
 - Start with reasonable targets and tighten over time
 - Use the Command Center to monitor SLA compliance in real-time
-- Configure webhooks to get instant Slack/email alerts on SLA breaches`,
+- Configure webhooks to get instant Slack/email alerts on SLA breaches
+
+**API Actions:** \`list_sla_alerts\`, \`create_sla_rule\`
+**Telegram:** \`/sla\``,
   },
   {
     id: "voicemail",
@@ -368,7 +392,9 @@ Instantly call new leads as they come in.
 **Tips:**
 - Keep voicemail greetings short (under 20 seconds)
 - Enable transcription to quickly scan messages
-- Set up auto-callbacks for important voicemails`,
+- Set up auto-callbacks for important voicemails
+
+**API Actions:** \`manage_voicemail\``,
   },
   {
     id: "webhooks",
@@ -395,7 +421,10 @@ Instantly call new leads as they come in.
 - Use webhooks to connect with CRMs (Salesforce, HubSpot)
 - Set up Slack notifications for important events
 - Always verify webhook signatures in production
-- Use the test button to verify your endpoint before going live`,
+- Use the test button to verify your endpoint before going live
+
+**API Actions:** \`list_webhooks\`, \`create_webhook\`, \`delete_webhook\`
+**Telegram:** \`/webhooks [biz]\``,
   },
   {
     id: "experiments",
@@ -422,7 +451,10 @@ Instantly call new leads as they come in.
 **Tips:**
 - Test one variable at a time for clear results
 - Run experiments for at least a week to get meaningful data
-- Use call scores and customer satisfaction metrics to judge winners`,
+- Use call scores and customer satisfaction metrics to judge winners
+
+**API Actions:** \`list_experiments\`, \`create_experiment\`
+**Telegram:** \`/experiments [biz]\``,
   },
   {
     id: "command-center",
@@ -439,7 +471,10 @@ Instantly call new leads as they come in.
 **Tips:**
 - Check the Command Center at the start of each day
 - Use predictive analytics to plan staffing and campaign timing
-- Customize your layout preferences in Settings`,
+- Customize your layout preferences in Settings
+
+**API Actions:** \`get_dashboard_stats\`, \`get_analytics\`
+**Telegram:** \`/status\`, \`/analytics [biz]\``,
   },
   {
     id: "agent-hub",
@@ -512,16 +547,31 @@ Content-Type: application/json
 }
 \`\`\`
 
-**Available Actions:**
-- **Businesses**: list, get, create, update
-- **Phone/IVR**: list numbers, create/update IVR menus, assign numbers
+**Available Actions (${55} total):**
+- **Businesses**: list, get, create, update, delete
+- **Phone/IVR**: list numbers, create number, create/update IVR menus, assign numbers
 - **Contacts**: list, create, bulk import
+- **Segments**: list, create, delete
 - **Campaigns**: list, create, start bulk calls, start marketing jobs
 - **Jobs**: get status, pause, cancel
-- **Calls**: list logs, get summaries, get transcripts
+- **Calls**: list logs, summaries, transcripts, scores, transfers, dispositions
 - **Config**: get/update agent config, update providers
-- **Monitoring**: dashboard stats, analytics
+- **Learnings**: list, create, approve/reject
+- **Templates**: list, create, update, delete
+- **Availability**: get, set
+- **Capacity**: get, update
+- **Approvals**: list, approve, reject
+- **Queue**: list, clear
+- **Routing**: list, create, delete rules
+- **Knowledge Base**: list, create, delete items
+- **Webhooks**: list, create, delete
+- **Experiments**: list, create
+- **DNC**: add, remove, list
+- **Monitoring**: dashboard stats, analytics, competitor mentions
 - **Help**: returns full API documentation as JSON
+
+**Write Permissions:**
+API keys have a \`permissions\` field. Keys with \`write: false\` can only perform read actions. All create/update/delete operations require \`write: true\`.
 
 **Self-Discovery:**
 Your agent can call \`{ "action": "help" }\` to get the complete API reference with all actions, parameters, and descriptions.
@@ -573,7 +623,10 @@ Your agent can call \`{ "action": "help" }\` to get the complete API reference w
 - Always honor opt-out requests immediately
 - Import existing DNC lists when setting up
 - The system cross-references DNC on every outbound call
-- Keep records of when and why numbers were added (compliance)`,
+- Keep records of when and why numbers were added (compliance)
+
+**API Actions:** \`manage_dnc\` (add/remove/list)
+**Telegram:** \`/dnc [add/remove] [biz] [phone]\``,
   },
   {
     id: "revenue",
@@ -596,25 +649,47 @@ Your agent can call \`{ "action": "help" }\` to get the complete API reference w
     id: "telegram",
     icon: MessageSquare,
     title: "Telegram Bot Integration",
-    content: `**What it does:** Connect a Telegram bot to receive notifications and send commands to your agents.
+    content: `**What it does:** Connect a Telegram bot for full remote control of your dashboard — monitoring, management, and operations all from your phone.
 
-**Setup:**
+**Setup Steps:**
+
+**Step 1: Create Your Bot**
+1. Open Telegram and search for @BotFather
+2. Send \`/newbot\` and follow the prompts
+3. Copy the bot token (looks like \`123456:ABC-DEF...\`)
+4. **Important:** This token was already stored securely as a secret named \`TELEGRAM_BOT_TOKEN\` — you do NOT paste it in the settings field
+
+**Step 2: Get Your Chat ID**
+1. Search for @userinfobot or @RawDataBot in Telegram
+2. Send it a message — it will reply with your numeric Chat ID
+3. Copy that number
+
+**Step 3: Configure in Settings**
 1. Go to **Settings** → **Telegram** section
-2. Enter your Telegram Bot Token (from @BotFather)
-3. Configure which notifications to receive:
-   - New calls
-   - Voicemails
-   - SLA alerts
-   - Daily summaries
+2. The "Secret Reference Name" field should say \`TELEGRAM_BOT_TOKEN\` — this is NOT where you paste your token, it's just the name pointing to the stored secret
+3. Paste your Chat ID from Step 2
+4. Toggle notifications on
+
+**Step 4: Set Webhook**
+Click the **Set Webhook** button — this registers your bot with Telegram so it can receive commands
+
+**Step 5: Test**
+Click **Test** to send a test message, then try sending \`/help\` to your bot
+
+**⚠️ Common Mistake:**
+The "Secret Reference Name" field is NOT for your bot token. It's a reference to the secret that was stored securely. Leave it as \`TELEGRAM_BOT_TOKEN\` unless told otherwise.
+
+**Available Commands (45+):**
+See the full command list by sending \`/help\` to your bot. Commands cover monitoring, business management, contacts, campaigns, agent memory, routing, approvals, queue management, and more.
 
 **Tips:**
 - Use Telegram for mobile monitoring when away from the dashboard
 - Set up group chats for team notifications
-- The bot can send you call summaries in real-time`,
+- The bot can execute any dashboard action remotely`,
   },
   {
     id: "learnings",
-    icon: BookOpen,
+    icon: Brain,
     title: "Agent Memory & Learnings",
     content: `**What it does:** The AI agent learns from past interactions and stores reusable responses.
 
@@ -634,7 +709,134 @@ Your agent can call \`{ "action": "help" }\` to get the complete API reference w
 - Review learnings weekly to maintain quality
 - Reject any incorrect or inappropriate learnings
 - High-confidence learnings (>0.8) are usually safe to approve
-- Use learnings to continuously improve your agent without manual instruction updates`,
+- Use learnings to continuously improve your agent without manual instruction updates
+
+**API Actions:** \`list_learnings\`, \`create_learning\`, \`update_learning_status\`
+**Telegram:** \`/learnings [biz]\``,
+  },
+  {
+    id: "templates",
+    icon: Tag,
+    title: "Message Templates",
+    content: `**What it does:** Create reusable message templates for automated follow-ups via SMS, email, or WhatsApp.
+
+**How to use:**
+1. Go to business → **Message Templates** tab
+2. Create a template with:
+   - **Trigger Event**: post_call, appointment_reminder, follow_up, etc.
+   - **Channel**: SMS, email, or WhatsApp
+   - **Template Text**: The message content
+3. Toggle templates active/inactive
+
+**Tips:**
+- Use templates for consistent post-call follow-ups
+- Test templates with small groups before enabling for all calls
+- Keep SMS templates under 160 characters for single-segment delivery
+
+**API Actions:** \`list_templates\`, \`create_template\`, \`update_template\`, \`delete_template\`
+**Telegram:** \`/templates [biz]\``,
+  },
+  {
+    id: "availability",
+    icon: Calendar,
+    title: "Availability Calendar",
+    content: `**What it does:** Set when your AI agent can book appointments and handle calls.
+
+**How to use:**
+1. Go to business → **Calendar** tab
+2. Toggle each day on/off
+3. Set start and end times per day
+4. Save — the agent will only book within these windows
+
+**Tips:**
+- Set different hours for different days (e.g., shorter Saturday hours)
+- The agent will tell callers when the next available slot is
+- Combine with routing rules for after-hours behavior
+
+**API Actions:** \`get_availability\`, \`set_availability\``,
+  },
+  {
+    id: "inbound-capacity",
+    icon: Gauge,
+    title: "Inbound Capacity",
+    content: `**What it does:** Control how many concurrent inbound calls your AI agent handles and what happens when capacity is exceeded.
+
+**Settings:**
+- **Max Concurrent Calls**: How many calls the agent handles simultaneously
+- **Overflow Action**: Queue, voicemail, or forward when at capacity
+- **Overflow Target**: Where to route overflow calls
+- **Auto-Scale**: Automatically increase capacity during peak times
+
+**Tips:**
+- Start with 10 concurrent calls and adjust based on performance
+- Always set an overflow action — don't leave callers hanging
+- Monitor queue depth during peak hours
+
+**API Actions:** \`get_inbound_capacity\`, \`update_inbound_capacity\`
+**Telegram:** \`/capacity [biz]\`, \`/setcapacity [biz] [max]\``,
+  },
+  {
+    id: "approvals",
+    icon: CheckSquare,
+    title: "Approval Requests",
+    content: `**What it does:** Review and approve/reject actions that require human authorization before the AI can proceed.
+
+**Types:**
+- **Escalations**: Agent requests human intervention
+- **Refunds**: Customer requests processed by AI
+- **Schedule changes**: Major appointment modifications
+- **Custom**: Any action you configure to require approval
+
+**How to use:**
+1. Go to **Approvals** from the sidebar
+2. Review pending requests with full context
+3. Approve or reject each request
+4. The system records who approved and when
+
+**Tips:**
+- Check approvals at least daily to avoid blocking AI operations
+- Use Telegram for instant approval notifications: \`/approvals\`, \`/approve [id]\`, \`/reject [id]\`
+
+**API Actions:** \`list_approvals\`, \`approve_request\`, \`reject_request\`
+**Telegram:** \`/approvals\`, \`/approve [id]\`, \`/reject [id]\``,
+  },
+  {
+    id: "queue",
+    icon: BarChart3,
+    title: "Call Queue Management",
+    content: `**What it does:** Monitor and manage callers waiting in queue when all agents are busy.
+
+**Features:**
+- View all waiting callers with position and estimated wait time
+- Clear the queue for a specific business
+- Queue size appears in status dashboard and Command Center
+
+**Tips:**
+- Monitor queue depth during peak hours
+- Set SLA rules for max queue wait time
+- Use routing rules to redirect to voicemail when queue is too long
+
+**API Actions:** \`list_queue\`, \`clear_queue\`
+**Telegram:** \`/queue [biz]\`, \`/clearqueue [biz]\``,
+  },
+  {
+    id: "competitors",
+    icon: Activity,
+    title: "Competitor Intelligence",
+    content: `**What it does:** Automatically detects and logs when callers mention competitor names during calls.
+
+**Features:**
+- Competitor name extraction from call transcripts
+- Context around the mention (what was said)
+- Trend tracking over time
+
+**Tips:**
+- Review competitor mentions weekly to understand market positioning
+- Use insights to improve your agent's competitive responses
+- Add competitive information to the Knowledge Base
+
+**API Actions:** \`list_competitor_mentions\`
+**Telegram:** \`/competitors [biz]\``,
   },
 ];
 
@@ -657,7 +859,7 @@ const HelpCenter = () => {
               <p className="text-sm text-muted-foreground mt-1">
                 1. Create an API key in <strong>Settings → API Keys</strong><br />
                 2. Send a POST to <code className="text-xs bg-muted px-1 py-0.5 rounded">/functions/v1/dashboard-api</code> with <code className="text-xs bg-muted px-1 py-0.5 rounded">Authorization: Bearer ak_xxx</code><br />
-                3. Use <code className="text-xs bg-muted px-1 py-0.5 rounded">{`{"action": "help"}`}</code> to get the full API reference
+                3. Use <code className="text-xs bg-muted px-1 py-0.5 rounded">{`{"action": "help"}`}</code> to get the full API reference (55 actions)
               </p>
             </div>
           </div>
@@ -693,25 +895,74 @@ const HelpCenter = () => {
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2 text-foreground">
             <Badge variant="outline">API Reference</Badge>
-            All Dashboard API Actions
+            All Dashboard API Actions (55)
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
             {[
-              { cat: "Businesses", actions: ["list_businesses", "get_business", "create_business", "update_business"] },
-              { cat: "Phone/IVR", actions: ["list_phone_numbers", "create_ivr_menu", "update_ivr_menu", "assign_number"] },
+              { cat: "Businesses", actions: ["list_businesses", "get_business", "create_business", "update_business", "delete_business"] },
+              { cat: "Phone/IVR", actions: ["list_phone_numbers", "create_phone_number", "create_ivr_menu", "update_ivr_menu", "assign_number"] },
               { cat: "Contacts", actions: ["list_contacts", "create_contact", "import_contacts"] },
+              { cat: "Segments", actions: ["list_segments", "create_segment", "delete_segment"] },
               { cat: "Campaigns", actions: ["list_campaigns", "create_campaign", "start_bulk_call", "start_marketing_job"] },
               { cat: "Jobs", actions: ["get_job_status", "pause_job", "cancel_job"] },
-              { cat: "Calls", actions: ["list_call_logs", "list_call_summaries", "get_call_transcript"] },
+              { cat: "Calls", actions: ["list_call_logs", "list_call_summaries", "get_call_transcript", "list_call_scores", "list_call_transfers", "list_dispositions", "create_disposition"] },
               { cat: "Config", actions: ["get_agent_config", "update_agent_config", "update_providers"] },
-              { cat: "Monitoring", actions: ["get_dashboard_stats", "get_analytics", "help"] },
+              { cat: "Learnings", actions: ["list_learnings", "create_learning", "update_learning_status"] },
+              { cat: "Templates", actions: ["list_templates", "create_template", "update_template", "delete_template"] },
+              { cat: "Availability", actions: ["get_availability", "set_availability"] },
+              { cat: "Capacity", actions: ["get_inbound_capacity", "update_inbound_capacity"] },
+              { cat: "Approvals", actions: ["list_approvals", "approve_request", "reject_request"] },
+              { cat: "Queue", actions: ["list_queue", "clear_queue"] },
+              { cat: "Routing", actions: ["list_routing_rules", "create_routing_rule", "delete_routing_rule"] },
+              { cat: "Knowledge Base", actions: ["list_knowledge_base", "create_knowledge_base_item", "delete_knowledge_base_item"] },
+              { cat: "DNC", actions: ["manage_dnc"] },
+              { cat: "Webhooks", actions: ["list_webhooks", "create_webhook", "delete_webhook"] },
+              { cat: "Experiments", actions: ["list_experiments", "create_experiment"] },
+              { cat: "Profiles", actions: ["list_customer_profiles"] },
+              { cat: "Voicemail", actions: ["manage_voicemail"] },
+              { cat: "Monitoring", actions: ["get_dashboard_stats", "get_analytics", "list_competitor_mentions"] },
+              { cat: "Meta", actions: ["help"] },
             ].map((g) => (
               <div key={g.cat} className="space-y-1">
                 <p className="font-semibold text-foreground">{g.cat}</p>
                 {g.actions.map((a) => (
                   <code key={a} className="block text-xs bg-muted px-2 py-1 rounded font-mono text-muted-foreground">{a}</code>
+                ))}
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="border-border">
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2 text-foreground">
+            <Badge variant="outline">Telegram</Badge>
+            All Bot Commands (45+)
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+            {[
+              { cat: "📊 Monitoring", cmds: ["/status", "/calls", "/report [name]", "/analytics [name]", "/sla", "/bookings", "/leads", "/bulk status"] },
+              { cat: "🏢 Business", cmds: ["/create [name] [industry]", "/delete [name]", "/config [name]", "/setprompt [name] | [text]", "/setvoice [name] [voice]", "/setmode [name] [mode]", "/pause [name]", "/resume [name]"] },
+              { cat: "👤 Contacts", cmds: ["/addcontact [biz]|[name]|[phone]", "/contacts [biz]", "/segments [biz]"] },
+              { cat: "📢 Campaigns", cmds: ["/campaign [biz]|[name]|[script]", "/startbulk [biz]", "/startmarketing [biz]|[type]|[msg]", "/jobstatus [id]", "/pausejob [id]", "/canceljob [id]"] },
+              { cat: "📞 Phone/IVR", cmds: ["/ivrcreate [biz]|[template]", "/assignnumber [id] [handler]"] },
+              { cat: "🧠 Agent Memory", cmds: ["/learnings [biz]", "/scores [biz]"] },
+              { cat: "📝 Templates", cmds: ["/templates [biz]"] },
+              { cat: "📚 Knowledge Base", cmds: ["/kb [biz]", "/addkb [biz]|[title]|[content]"] },
+              { cat: "🔀 Routing", cmds: ["/routing [biz]", "/addrule [biz]|[type]|[val]|[action]", "/capacity [biz]", "/setcapacity [biz] [max]"] },
+              { cat: "📋 Approvals", cmds: ["/approvals", "/approve [id]", "/reject [id]"] },
+              { cat: "⏳ Queue", cmds: ["/queue [biz]", "/clearqueue [biz]"] },
+              { cat: "🔍 Intelligence", cmds: ["/transcript [id]", "/dnc [op] [biz] [phone]", "/webhooks [biz]", "/experiments [biz]", "/profiles [biz]", "/competitors [biz]"] },
+            ].map((g) => (
+              <div key={g.cat} className="space-y-1">
+                <p className="font-semibold text-foreground">{g.cat}</p>
+                {g.cmds.map((c) => (
+                  <code key={c} className="block text-xs bg-muted px-2 py-1 rounded font-mono text-muted-foreground">{c}</code>
                 ))}
               </div>
             ))}
