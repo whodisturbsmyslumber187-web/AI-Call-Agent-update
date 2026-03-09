@@ -32,6 +32,7 @@ import CallDispositionsTab from "@/components/business/CallDispositionsTab";
 import ContactSegmentsTab from "@/components/business/ContactSegmentsTab";
 import ProviderFailoverTab from "@/components/business/ProviderFailoverTab";
 import MarketingCampaignsTab from "@/components/business/MarketingCampaignsTab";
+import IvrMenuTab from "@/components/business/IvrMenuTab";
 
 const BusinessDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -89,6 +90,7 @@ const BusinessDetail = () => {
           <TabsTrigger value="failover">Failover</TabsTrigger>
           <TabsTrigger value="phones">Phones</TabsTrigger>
           <TabsTrigger value="routing">Routing</TabsTrigger>
+          <TabsTrigger value="ivr">IVR Menu</TabsTrigger>
           <TabsTrigger value="calendar">Calendar</TabsTrigger>
           <TabsTrigger value="gcal">Google Cal</TabsTrigger>
           <TabsTrigger value="knowledge">Knowledge</TabsTrigger>
@@ -123,6 +125,7 @@ const BusinessDetail = () => {
         <TabsContent value="failover" className="mt-6"><ProviderFailoverTab businessId={business.id} /></TabsContent>
         <TabsContent value="phones" className="mt-6"><PhoneNumbersTab businessId={business.id} /></TabsContent>
         <TabsContent value="routing" className="mt-6"><RoutingRulesTab businessId={business.id} /></TabsContent>
+        <TabsContent value="ivr" className="mt-6"><IvrMenuTab businessId={business.id} /></TabsContent>
         <TabsContent value="calendar" className="mt-6"><CalendarTab businessId={business.id} /></TabsContent>
         <TabsContent value="gcal" className="mt-6"><GoogleCalendarTab businessId={business.id} /></TabsContent>
         <TabsContent value="knowledge" className="mt-6"><KnowledgeBaseTab businessId={business.id} /></TabsContent>
