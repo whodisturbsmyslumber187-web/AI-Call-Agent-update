@@ -735,7 +735,7 @@ Deno.serve(async (req) => {
     }
 
     // Log command
-    await supabase.from("telegram_commands_log").insert({ user_id: userId, command: text, response_summary: response.substring(0, 200) }).catch(() => {});
+    try { await supabase.from("telegram_commands_log").insert({ user_id: userId, command: text, response_summary: response.substring(0, 200) }); } catch(_e) {}
 
     // Send response
     if (botToken && response) {
